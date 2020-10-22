@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +144,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dependencies\GLAD\src\glad.c" />
+    <ClCompile Include="testbed\imgui\imgui.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_draw.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_widgets.cpp" />
     <ClCompile Include="testbed\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
