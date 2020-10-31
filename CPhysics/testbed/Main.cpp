@@ -1,15 +1,12 @@
 #include "Cereal/archives/binary.hpp"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#include "glad/glad.h"
-
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "Settings.h"
+#include "Draw.h"
+#include "CPhysics/CPhysics.h"
 
 #include <fstream>
 

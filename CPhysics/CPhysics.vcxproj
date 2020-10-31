@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;C:\Users\Hayden\source\repos\CPhysics\CPhysics\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CPhysics/dependencies;$(SolutionDir)CPhysics/dependencies/GLFW/include;$(SolutionDir)CPhysics/dependencies/GLAD/include;$(SolutionDir)CPhysics/dependencies/imgui;C:\Users\Hayden\source\repos\CPhysics\CPhysics\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dependencies\GLAD\src\glad.c" />
+    <ClCompile Include="testbed\Draw.cpp" />
     <ClCompile Include="testbed\imgui\imgui.cpp" />
     <ClCompile Include="testbed\imgui\imgui_draw.cpp" />
     <ClCompile Include="testbed\imgui\imgui_impl_glfw.cpp" />
@@ -153,6 +154,19 @@
     <ClCompile Include="testbed\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\CPhysics\AABB.h" />
+    <ClInclude Include="include\CPhysics\Arbiter.h" />
+    <ClInclude Include="include\CPhysics\Body.h" />
+    <ClInclude Include="include\CPhysics\Circle.h" />
+    <ClInclude Include="include\CPhysics\Colour.h" />
+    <ClInclude Include="include\CPhysics\CPhysics.h" />
+    <ClInclude Include="include\CPhysics\Matrix2D.h" />
+    <ClInclude Include="include\CPhysics\Polygon.h" />
+    <ClInclude Include="include\CPhysics\Shape.h" />
+    <ClInclude Include="include\CPhysics\Timer.h" />
+    <ClInclude Include="include\CPhysics\Vectors2D.h" />
+    <ClInclude Include="include\CPhysics\World.h" />
+    <ClInclude Include="testbed\Draw.h" />
     <ClInclude Include="testbed\Settings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
