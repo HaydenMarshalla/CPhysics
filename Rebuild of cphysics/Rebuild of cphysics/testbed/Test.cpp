@@ -161,10 +161,10 @@ void Test::updateRaycast(const Vectors2D& pw)
 	raycastExplosions[0].getRayscatter().changeEpicentre(pw);
 }
 
-void Test::addPillar(Body* b)
+void Test::addPillar(Body* b, real density)
 {
 	b->restitution = 0.2f;
-	b->setDensity(0.2f);
+	b->setDensity(density);
 	world.addBody(b);
 }
 
@@ -178,13 +178,13 @@ void Test::createTower(unsigned int floors, real x, real y)
 	const real widthOfPillar = width + width;
 	for (unsigned int k = 0; k < floors; k++) {
 		Body* leftPillar = new Body(new Polygon(width, height), x, y + height);
-		addPillar(leftPillar);
+		addPillar(leftPillar, 1.0f);
 
 		Body* rightPillar = new Body(new Polygon(width, height), x + heightOfPillar - widthOfPillar, y + height);
-		addPillar(rightPillar);
+		addPillar(rightPillar, 1.0f);
 
 		Body* topPillar = new Body(new Polygon(height, width), x + height - width, y + heightOfPillar + width);
-		addPillar(topPillar);
+		addPillar(topPillar, 1.0f);
 		y += heightOfPillar + width + width;
 	}
 }

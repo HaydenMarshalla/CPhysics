@@ -56,14 +56,14 @@ public:
 			x += height;
 
 			Body* initialPillar = new Body(new Polygon(width + 2.0f, height), x, y + height);
-			addPillar(initialPillar);
+			addPillar(initialPillar, 0.2f);
 
 			for (unsigned int i = 0; i < noOfPillars - k; i++) {
 				Body* rightPillar = new Body(new Polygon(width + 2.0f, height), x + widthOfTopPillar + (widthOfTopPillar * static_cast<float>(i)), y + height);
-				addPillar(rightPillar);
+				addPillar(rightPillar, 0.2f);
 
 				Body* topPillar = new Body(new Polygon(height, width), x + height + (static_cast<float>(i) * widthOfTopPillar), y + widthOfTopPillar + width);
-				addPillar(topPillar);
+				addPillar(topPillar, 0.2f);
 			}
 			y += widthOfTopPillar + width + width;
 		}

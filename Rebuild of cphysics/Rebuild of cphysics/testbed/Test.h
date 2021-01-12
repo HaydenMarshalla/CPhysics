@@ -24,7 +24,7 @@ public:
 	void render();
 	void updateProximity(const Vectors2D& pw);
 	void updateRaycast(const Vectors2D& pw);
-	void addPillar(Body* b);
+	void addPillar(Body* b, real density);
 	void createTower(unsigned int floors, real x, real y);
 	void slice(const int i);
 	void breakJoint(unsigned int i);

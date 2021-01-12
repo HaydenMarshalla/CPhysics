@@ -91,7 +91,7 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 }
 
 void Slice::sliceObjects(World& world) {
-	for (unsigned int i = 0; i < intersectingBodiesInfo.size() ; i += 2) {
+	for (unsigned int i = 0; i < intersectingBodiesInfo.size(); i += 2) {
 		Body* b = intersectingBodiesInfo[i].getB();
 		bool isStatic = b->mass == 0.0f;
 		if (b->shape->getType() == Polygon::ePolygon) {
@@ -122,6 +122,7 @@ void Slice::sliceObjects(World& world) {
 			Body* b1 = new Body(new Polygon(obj1Vertz), polyCentre.x, polyCentre.y);
 			if (isStatic)
 				b1->setDensity(0.0f);
+			b1->restitution = b->restitution;
 			world.addBody(b1);
 
 			totalVerticesObj1 = secondIndex - obj2firstIndex + 2;
@@ -140,6 +141,7 @@ void Slice::sliceObjects(World& world) {
 			Body* b2 = new Body(new Polygon(obj2Vertz), polyCentre.x, polyCentre.y);
 			if (isStatic)
 				b2->setDensity(0.0f);
+			b2->restitution = b->restitution;
 			world.addBody(b2);
 		}
 		else if (b->shape->getType() == Shape::eCircle) {

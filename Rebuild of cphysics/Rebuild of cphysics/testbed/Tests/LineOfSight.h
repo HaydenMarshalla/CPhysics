@@ -11,8 +11,8 @@ public:
 
 		resetCamera();
 		generateBoxOfObjects();
-		
-		ShadowCasting shadow = ShadowCasting(Vectors2D(-1000.0f, 0.0f), 11000);
+
+		ShadowCasting shadow = ShadowCasting(Vectors2D(0.0f, 0.0f), 11000);
 		shadowcasts.push_back(shadow);
 	}
 
@@ -28,8 +28,11 @@ public:
 			std::vector<RayAngleInformation> raydata = p.getRaydata();
 			for (unsigned int i = 0; i < raydata.size(); i++) {
 				Ray ray1 = raydata[i].getRAY();
+				if (ray1.getRayInformation().getB() == nullptr) continue;
+				
 				Ray ray2 = raydata[i + 1 == raydata.size() ? 0 : i + 1].getRAY();
-				debugDraw.drawShadowPolygon(ray1,ray2, raydata[i].getRAY().getStartPoint(), settings.shadow);
+				if (ray2.getRayInformation().getB() == nullptr) continue;
+				debugDraw.drawShadowPolygon(ray1, ray2, raydata[i].getRAY().getStartPoint(), settings.shadow);
 			}
 		}
 	}
