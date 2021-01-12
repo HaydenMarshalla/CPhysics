@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dependencies\GLAD\src\glad.c" />
+    <ClCompile Include="src\Arbiter.cpp" />
+    <ClCompile Include="src\Body.cpp" />
+    <ClCompile Include="src\Circle.cpp" />
+    <ClCompile Include="src\Joints.cpp" />
+    <ClCompile Include="src\JointToBody.cpp" />
+    <ClCompile Include="src\JointToPoint.cpp" />
+    <ClCompile Include="src\ParticleExplosion.cpp" />
+    <ClCompile Include="src\Polygon.cpp" />
+    <ClCompile Include="src\ProximityExplosion.cpp" />
+    <ClCompile Include="src\Ray.cpp" />
+    <ClCompile Include="src\RaycastExplosion.cpp" />
+    <ClCompile Include="src\Rayscatter.cpp" />
+    <ClCompile Include="src\Shadowcast.cpp" />
+    <ClCompile Include="src\Slice.cpp" />
+    <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="testbed\imgui\imgui.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_draw.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="testbed\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="testbed\Main.cpp" />
+    <ClCompile Include="testbed\Render.cpp" />
+    <ClCompile Include="testbed\Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\CPhysics\AABB.h" />
+    <ClInclude Include="include\CPhysics\Arbiter.h" />
+    <ClInclude Include="include\CPhysics\Body.h" />
+    <ClInclude Include="include\CPhysics\Circle.h" />
+    <ClInclude Include="include\CPhysics\CPhysics.h" />
+    <ClInclude Include="include\CPhysics\Explosion.h" />
+    <ClInclude Include="include\CPhysics\Joint.h" />
+    <ClInclude Include="include\CPhysics\JointToBody.h" />
+    <ClInclude Include="include\CPhysics\JointToPoint.h" />
+    <ClInclude Include="include\CPhysics\Matrix2D.h" />
+    <ClInclude Include="include\CPhysics\ParticleExplosion.h" />
+    <ClInclude Include="include\CPhysics\Polygon.h" />
+    <ClInclude Include="include\CPhysics\ProximityExplosion.h" />
+    <ClInclude Include="include\CPhysics\Ray.h" />
+    <ClInclude Include="include\CPhysics\RaycastExplosion.h" />
+    <ClInclude Include="include\CPhysics\Rayscatter.h" />
+    <ClInclude Include="include\CPhysics\Shadowcast.h" />
+    <ClInclude Include="include\CPhysics\Shape.h" />
+    <ClInclude Include="include\CPhysics\Slice.h" />
+    <ClInclude Include="include\CPhysics\Vectors2D.h" />
+    <ClInclude Include="include\CPhysics\World.h" />
+    <ClInclude Include="testbed\Colour.h" />
+    <ClInclude Include="testbed\Render.h" />
+    <ClInclude Include="testbed\Settings.h" />
+    <ClInclude Include="testbed\Test.h" />
+    <ClInclude Include="testbed\Tests\BouncingBall.h" />
+    <ClInclude Include="testbed\Tests\Chains.h" />
+    <ClInclude Include="testbed\Tests\Drag.h" />
+    <ClInclude Include="testbed\Tests\Friction.h" />
+    <ClInclude Include="testbed\Tests\LineOfSight.h" />
+    <ClInclude Include="testbed\Tests\MixedShapes.h" />
+    <ClInclude Include="testbed\Tests\NewtonsCradle.h" />
+    <ClInclude Include="testbed\Tests\ParticleExplosionTest.h" />
+    <ClInclude Include="testbed\Tests\pch.h" />
+    <ClInclude Include="testbed\Tests\ProximityExplosionTest.h" />
+    <ClInclude Include="testbed\Tests\Raycast.h" />
+    <ClInclude Include="testbed\Tests\RaycastExplosionTest.h" />
+    <ClInclude Include="testbed\Tests\Restitution.h" />
+    <ClInclude Include="testbed\Tests\SliceObjects.h" />
+    <ClInclude Include="testbed\Tests\StackedObjects.h" />
+    <ClInclude Include="testbed\Tests\Trebuchet.h" />
+    <ClInclude Include="testbed\Tests\Wreckingball.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{B237AC3B-DFAB-4AC2-B966-C5F428335AF2}</ProjectGuid>
+    <RootNamespace>Rebuildofcphysics</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rebuild of cphysics/dependencies;$(SolutionDir)Rebuild of cphysics/dependencies/GLFW/include;$(SolutionDir)Rebuild of cphysics/dependencies/GLAD/include;$(SolutionDir)Rebuild of cphysics/dependencies/imgui;$(SolutionDir)Rebuild of cphysics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Rebuild of cphysics/dependencies/GLFW/lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rebuild of cphysics\dependencies\;$(SolutionDir)Rebuild of cphysics\dependencies\GLAD\include;$(SolutionDir)Rebuild of cphysics\dependencies\GLFW\include;$(SolutionDir)Rebuild of cphysics\dependencies\imgui;$(SolutionDir)Rebuild of cphysics\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Rebuild of cphysics\dependencies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rebuild of cphysics/dependencies;$(SolutionDir)Rebuild of cphysics/dependencies/GLFW/include;$(SolutionDir)Rebuild of cphysics/dependencies/GLAD/include;$(SolutionDir)Rebuild of cphysics/dependencies/imgui;$(SolutionDir)Rebuild of cphysics/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Rebuild of cphysics/dependencies/GLFW/lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rebuild of cphysics\dependencies\;$(SolutionDir)Rebuild of cphysics\dependencies\GLAD\include;$(SolutionDir)Rebuild of cphysics\dependencies\GLFW\include;$(SolutionDir)Rebuild of cphysics\dependencies\imgui;$(SolutionDir)Rebuild of cphysics\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Rebuild of cphysics\dependencies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
