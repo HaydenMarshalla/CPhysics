@@ -83,7 +83,7 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 				}
 			}
 		}
-		if (noOfIntersections == 1) {
+		if (noOfIntersections % 2 == 1) {
 			intersectingBodiesInfo.erase(intersectingBodiesInfo.begin() + (intersectingBodiesInfo.size() - 1));
 			noOfIntersections = 0;
 		}
@@ -91,8 +91,7 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 }
 
 void Slice::sliceObjects(World& world) {
-	unsigned int k = intersectingBodiesInfo.size() % 2;
-	for (unsigned int i = 0; i < intersectingBodiesInfo.size() - k; i += 2) {
+	for (unsigned int i = 0; i < intersectingBodiesInfo.size() ; i += 2) {
 		Body* b = intersectingBodiesInfo[i].getB();
 		bool isStatic = b->mass == 0.0f;
 		if (b->shape->getType() == Polygon::ePolygon) {
@@ -148,6 +147,7 @@ void Slice::sliceObjects(World& world) {
 		}
 		world.removeBody(b);
 	}
+	intersectingBodiesInfo.clear();
 }
 
 void Slice::setDirection(const Vectors2D& sliceVector)
