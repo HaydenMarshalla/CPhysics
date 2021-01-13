@@ -39,9 +39,7 @@ public:
 
 	void Create();
 	void Destroy();
-
-	void renderPoint(const Vectors2D& p, real size, const Colour& colour);
-
+	
 	void renderString(real x, real y, const char* s);
 
 	void drawCircle(const Vectors2D& center, real radius, const Colour& colour);
@@ -68,7 +66,6 @@ public:
 	
 	void flush() const;
 
-	GLRenderPoints* points = nullptr;
 	GLRenderLines* lines = nullptr;
 	GLRenderTriangles* triangles = nullptr;
 };

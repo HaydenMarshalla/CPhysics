@@ -41,24 +41,33 @@ struct Settings {
 		testIndex = 0;
 	}
 
+	Colour convertColourToFloat(int r, int g, int b, int a)
+	{
+		return Colour(static_cast<float>(r) / 255.0f,
+			static_cast<float>(g) / 255.0f,
+			static_cast<float>(b) / 255.0f,
+			static_cast<float>(a) / 255.0f);
+	}
+
 	void defaultColourScheme() {
-		shapeFill = Colour(0.0f, 0.0f, 0.0f, 1.0f);
-		shapeOutLine = Colour(1.0f, 1.0f, 1.0f, 1.0f);
-		staticFill = Colour(0.14f, 0.26f, 0.12f, 1.0f);
-		staticOutLine = Colour(0.4f, 0.55f, 0.37f, 1.0f);
+		background = convertColourToFloat(8, 20, 30, 255);
+		shapeFill = convertColourToFloat(97, 146, 58, 255);
+		shapeOutLine = convertColourToFloat(201, 206, 167, 255);
+		staticFill = convertColourToFloat(97, 60, 60, 255);
+		staticOutLine = convertColourToFloat(42, 28, 30, 255);
 
-		aabb = Colour(1.0f, 1.0f, 1.0f, 1.0f);
-		joints = Colour(1.0f, 1.0f, 1.0f, 1.0f);
+		aabb = convertColourToFloat(0, 255, 255, 255);
+		joints = convertColourToFloat(0, 255, 255, 255);
 
-		contactPoint = Colour(1.0f, 1.0f, 1.0f, 1.0f);
-		centreOfMass = Colour(0.8f, 0.6f, 0.63f, 1.0f);
-		trail = Colour(1.0f, 1.0f, 0.0f, 0.8f);
+		contactPoint = convertColourToFloat(255, 255, 255, 255);
+		centreOfMass = convertColourToFloat(8, 20, 30, 255);
+		trail = convertColourToFloat(255, 255, 0, 200);
 
-		proximity = Colour(1.0f, 1.0f, 0.0f, 0.8f);
-		linesToObjects = Colour(1.0f, 1.0f, 0.0f, 0.4f);
-		rayToBody = Colour(1.0f, 1.0f, 1.0f, 1.0f);
-		projectedRay = Colour(0.5f, 0.5f, 0.5f, 0.588f);
-		scatterRays = Colour(1.0f, 1.0f, 0.0f, 1.0f);
+		proximity = convertColourToFloat(255, 255, 0, 200);
+		linesToObjects = convertColourToFloat(255, 255, 0, 180);
+		rayToBody = convertColourToFloat(255, 255, 0, 255);
+		projectedRay = convertColourToFloat(127, 127, 127, 100);
+		scatterRays = convertColourToFloat(255, 255, 0, 255);
 	}
 
 	unsigned int window_width;
@@ -77,6 +86,7 @@ struct Settings {
 	bool showUI;
 	unsigned int testIndex;
 
+	Colour background;
 	Colour aabb;
 	Colour centreOfMass;
 	Colour contactPoint;

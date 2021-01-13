@@ -71,7 +71,7 @@ public:
 
 	void resetCamera() override
 	{
-		camera.center.set(-15.0f, 20.0f);
+		camera.center.set(-15.0f, 200.0f);
 		camera.zoom = 20.0f;
 	}
 

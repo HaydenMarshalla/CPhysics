@@ -550,7 +550,7 @@ int main()
 
 	debugDraw.Create();
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(settings.background.r, settings.background.g, settings.background.b, settings.background.a);
 
 	while (!glfwWindowShouldClose(window))
 	{

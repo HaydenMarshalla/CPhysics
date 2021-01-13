@@ -64,22 +64,6 @@ public:
 		camera.zoom = 25.0f;
 	}
 
-	void step(float dt, int solver_iterations) override
-	{
-		for (ProximityExplosion& p : proximityExplosions)
-			p.update(world.getBodies());
-
-		for (ProximityExplosion& p : proximityExplosions) {
-			debugDraw.drawCircle(p.getEpicentre(), static_cast<float>(p.getProximity()), settings.proximity);
-			p.updateLinesToBody();
-			for (const Vectors2D& v : p.getLinesToBodies())
-			{
-				debugDraw.drawLine(v, p.getEpicentre(), settings.linesToObjects);
-			}
-		}
-		world.step(dt, solver_iterations);
-	}
-
 	void drawInstructions() override
 	{
 		debugDraw.renderString(240.0f, 30.0f, "Click to cast an explosion inside the proximity radius!");

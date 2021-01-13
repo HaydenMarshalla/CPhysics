@@ -32,19 +32,6 @@ public:
 		for (Slice& s : slices) {
 			s.updateProjection(world.getBodies());
 		}
-		for (Slice& s : slices) {
-			Vectors2D epicenter = s.getStartpoint();
-			Vectors2D endPoint = (s.getDirection() * s.getDistance()) + s.getStartpoint();
-			debugDraw.drawLine(epicenter, endPoint, settings.projectedRay);
-
-			for (unsigned int i = 0; i < s.getIntersectingBodiesInfo().size(); i++) {
-				if ((i + 1) % 2 == 0) {
-					Vectors2D intersection1 = s.getIntersectingBodiesInfo()[i - 1].getCoord();
-					Vectors2D intersection2 = s.getIntersectingBodiesInfo()[i].getCoord();
-					debugDraw.drawLine(intersection1, intersection2, settings.rayToBody);
-				}
-			}
-		}
 	}
 
 	void drawInstructions() override

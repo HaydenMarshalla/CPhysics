@@ -9,9 +9,9 @@ public:
 	RaycastExplosionTest()
 	{
 		world = World(Vectors2D(0.0f, -9.81f));
-		
+
 		resetCamera();
-		
+
 		{
 			buildShelf(50.0f, 300.0f);
 			buildShelf(450.0f, 400.0f);
@@ -62,17 +62,6 @@ public:
 	{
 		camera.center.set(-250.0f, 220.0f);
 		camera.zoom = 25.0f;
-	}
-
-	void step(float dt, int solver_iterations) override
-	{
-		for (RaycastExplosion& p : raycastExplosions)
-			p.update(world.getBodies());
-
-		for (RaycastExplosion& p : raycastExplosions) {
-			debugDraw.drawRayscatter(p.getRayscatter(), settings.scatterRays);
-		}
-		world.step(dt, solver_iterations);
 	}
 
 	void drawInstructions() override

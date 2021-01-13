@@ -97,18 +97,28 @@ void Test::render()
 				Circle* circle = (Circle*)b->shape;
 				const float radius = circle->getRadius();
 				Vectors2D line = circle->rotation * Vectors2D(1, 0);
-				debugDraw.drawSolidCircle(b->position, radius, line, settings.shapeOutLine, settings.shapeFill);
+				if (b->mass == 0.0f)
+					debugDraw.drawSolidCircle(b->position, radius, line, settings.staticOutLine, settings.staticFill);
+				else
+					debugDraw.drawSolidCircle(b->position, radius, line, settings.shapeOutLine, settings.shapeFill);
 			}
 							   break;
 
 			case Shape::ePolygon: {
 				Polygon* polygon = (Polygon*)b->shape;
-				debugDraw.drawSolidPolygon(polygon->getVertices(), b->position, b->shape->rotation, polygon->getVertexCount(), settings.shapeOutLine, settings.shapeFill);
+				if (b->mass == 0.0f)
+					debugDraw.drawSolidPolygon(polygon->getVertices(), b->position, b->shape->rotation, polygon->getVertexCount(), settings.staticOutLine, settings.staticFill);
+				else
+					debugDraw.drawSolidPolygon(polygon->getVertices(), b->position, b->shape->rotation, polygon->getVertexCount(), settings.shapeOutLine, settings.shapeFill);
 			}
 								break;
 			}
+			// THIS SHOULD NOT BE HERE BUT THERE IS A BUG WITH THE FLUSHING
+			// OBJECTS BECOME OVERLAPPED/INVISIBLE. SHOULD BE DEALT WITH WHEN BUFFER IS FULL.
+			debugDraw.flush();
 		}
 	}
+
 	if (settings.drawAABBs) {
 		for (Body* b : world.getBodies())
 		{
@@ -121,13 +131,53 @@ void Test::render()
 			debugDraw.drawJoint(j, settings.joints);
 		}
 	}
-	for (Ray r : rays)
+	for (Ray& r : rays)
 	{
 		debugDraw.drawRay(r, settings.rayToBody);
 	}
-	for (Rayscatter r : rayscatters)
+	for (Rayscatter& r : rayscatters)
 	{
 		debugDraw.drawRayscatter(r, settings.rayToBody);
+	}
+	for (ShadowCasting& p : shadowcasts) {
+		p.updateProjections(world.getBodies());
+		std::vector<RayAngleInformation> raydata = p.getRaydata();
+		for (unsigned int i = 0; i < raydata.size(); i++) {
+			Ray ray1 = raydata[i].getRAY();
+			if (ray1.getRayInformation().getB() == nullptr) continue;
+
+			Ray ray2 = raydata[i + 1 == raydata.size() ? 0 : i + 1].getRAY();
+			if (ray2.getRayInformation().getB() == nullptr) continue;
+			debugDraw.drawShadowPolygon(ray1, ray2, raydata[i].getRAY().getStartPoint(), settings.shadow);
+		}
+	}
+	for (ProximityExplosion& p : proximityExplosions)
+		p.update(world.getBodies());
+
+	for (ProximityExplosion& p : proximityExplosions) {
+		debugDraw.drawCircle(p.getEpicentre(), static_cast<float>(p.getProximity()), settings.proximity);
+		p.updateLinesToBody();
+		for (const Vectors2D& v : p.getLinesToBodies())
+		{
+			debugDraw.drawLine(v, p.getEpicentre(), settings.linesToObjects);
+		}
+	}
+	for (RaycastExplosion& p : raycastExplosions) {
+		p.update(world.getBodies());
+		debugDraw.drawRayscatter(p.getRayscatter(), settings.scatterRays);
+	}
+	for (Slice& s : slices) {
+		Vectors2D epicenter = s.getStartpoint();
+		Vectors2D endPoint = (s.getDirection() * s.getDistance()) + s.getStartpoint();
+		debugDraw.drawLine(epicenter, endPoint, settings.projectedRay);
+
+		for (unsigned int i = 0; i < s.getIntersectingBodiesInfo().size(); i++) {
+			if ((i + 1) % 2 == 0) {
+				Vectors2D intersection1 = s.getIntersectingBodiesInfo()[i - 1].getCoord();
+				Vectors2D intersection2 = s.getIntersectingBodiesInfo()[i].getCoord();
+				debugDraw.drawLine(intersection1, intersection2, settings.rayToBody);
+			}
+		}
 	}
 	if (settings.drawContacts)
 	{
@@ -145,10 +195,9 @@ void Test::render()
 			Vectors2D line = Vectors2D(static_cast<float>(settings.COM_RADIUS), 0.0f);
 			mul(b->shape->rotation, line);
 
-			debugDraw.drawCross(centre,line, settings.joints);
+			debugDraw.drawCross(centre, line, settings.joints);
 		}
 	}
-	debugDraw.flush();
 }
 
 void Test::updateProximity(const Vectors2D& pw)

@@ -57,145 +57,6 @@ static GLuint sCreateShaderProgram(const char* vs, const char* fs)
 	return programId;
 }
 
-struct GLRenderPoints
-{
-	void Create()
-	{
-		const char* vs = \
-			"#version 330\n"
-			"uniform mat4 projectionMatrix;\n"
-			"layout(location = 0) in vec2 v_position;\n"
-			"layout(location = 1) in vec4 v_color;\n"
-			"layout(location = 2) in float v_size;\n"
-			"out vec4 f_color;\n"
-			"void main(void)\n"
-			"{\n"
-			"	f_color = v_color;\n"
-			"	gl_Position = projectionMatrix * vec4(v_position, 0.0f, 1.0f);\n"
-			"   gl_PointSize = v_size;\n"
-			"}\n";
-
-		const char* fs = \
-			"#version 330\n"
-			"in vec4 f_color;\n"
-			"out vec4 color;\n"
-			"void main(void)\n"
-			"{\n"
-			"	color = f_color;\n"
-			"}\n";
-
-		programId = sCreateShaderProgram(vs, fs);
-		projectionUniform = glGetUniformLocation(programId, "projectionMatrix");
-		vertexAttribute = 0;
-		colorAttribute = 1;
-		sizeAttribute = 2;
-
-
-		glGenVertexArrays(1, &vaoId);
-		glGenBuffers(3, vboIds);
-
-		glBindVertexArray(vaoId);
-		glEnableVertexAttribArray(vertexAttribute);
-		glEnableVertexAttribArray(colorAttribute);
-		glEnableVertexAttribArray(sizeAttribute);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
-		glVertexAttribPointer(vertexAttribute, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[1]);
-		glVertexAttribPointer(colorAttribute, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_DYNAMIC_DRAW);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[2]);
-		glVertexAttribPointer(sizeAttribute, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(sizes), sizes, GL_DYNAMIC_DRAW);
-
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-
-		count = 0;
-	}
-
-	void Destroy()
-	{
-		if (vaoId)
-		{
-			glDeleteVertexArrays(1, &vaoId);
-			glDeleteBuffers(2, vboIds);
-			vaoId = 0;
-		}
-
-		if (programId)
-		{
-			glDeleteProgram(programId);
-			programId = 0;
-		}
-	}
-
-	void Vertex(const Vectors2D& v, const Colour& c, float size)
-	{
-		if (count == e_maxVertices)
-			Flush();
-
-		vertices[count] = v;
-		colors[count] = c;
-		sizes[count] = size;
-		++count;
-	}
-
-	void Flush()
-	{
-		if (count == 0)
-			return;
-
-		glUseProgram(programId);
-
-		float proj[16] = { 0.0f };
-		camera.generateProjectionMatrix(proj, 0.0f);
-
-		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, proj);
-
-		glBindVertexArray(vaoId);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Vectors2D), vertices);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[1]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Colour), colors);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIds[2]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(float), sizes);
-
-		glEnable(GL_PROGRAM_POINT_SIZE);
-		glDrawArrays(GL_POINTS, 0, count);
-		glDisable(GL_PROGRAM_POINT_SIZE);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		glUseProgram(0);
-
-		count = 0;
-	}
-
-	enum { e_maxVertices = 512 };
-	Vectors2D vertices[e_maxVertices];
-	Colour colors[e_maxVertices];
-	float sizes[e_maxVertices];
-
-	signed int count;
-
-	GLuint vaoId;
-	GLuint vboIds[3];
-	GLuint programId;
-	GLint projectionUniform;
-	GLint vertexAttribute;
-	GLint colorAttribute;
-	GLint sizeAttribute;
-};
-
-//
 struct GLRenderLines
 {
 	void Create()
@@ -319,7 +180,6 @@ struct GLRenderLines
 	GLint colorAttribute;
 };
 
-//
 struct GLRenderTriangles
 {
 	void Create()
@@ -417,7 +277,10 @@ struct GLRenderTriangles
 		glBindBuffer(GL_ARRAY_BUFFER, vboIds[1]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Colour), colors);
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDrawArrays(GL_TRIANGLES, 0, count);
+		glDisable(GL_BLEND);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -442,22 +305,18 @@ struct GLRenderTriangles
 
 Render::Render()
 {
-	points = nullptr;
 	lines = nullptr;
 	triangles = nullptr;
 }
 
 Render::~Render()
 {
-	assert(points == nullptr);
 	assert(lines == nullptr);
 	assert(triangles == nullptr);
 }
 
 void Render::Create()
 {
-	points = new GLRenderPoints;
-	points->Create();
 	lines = new GLRenderLines;
 	lines->Create();
 	triangles = new GLRenderTriangles;
@@ -466,10 +325,6 @@ void Render::Create()
 
 void Render::Destroy()
 {
-	points->Destroy();
-	delete points;
-	points = nullptr;
-
 	lines->Destroy();
 	delete lines;
 	lines = nullptr;
@@ -477,11 +332,6 @@ void Render::Destroy()
 	triangles->Destroy();
 	delete triangles;
 	triangles = nullptr;
-}
-
-void Render::renderPoint(const Vectors2D& p, real size, const Colour& color)
-{
-	points->Vertex(p, color, size);
 }
 
 void Render::renderString(real x, real y, const char* s)
@@ -558,7 +408,6 @@ void Render::drawSolidCircle(const Vectors2D& center, real radius, const Vectors
 		v1 = v2;
 	}
 
-	// Draw a line fixed in the circle to animate rotation.
 	Vectors2D p = center + radius * axis;
 	lines->Vertex(center, outline);
 	lines->Vertex(p, outline);
@@ -744,5 +593,4 @@ void Render::flush() const
 {
 	triangles->Flush();
 	lines->Flush();
-	points->Flush();
 }
