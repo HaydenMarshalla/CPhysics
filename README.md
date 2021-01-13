@@ -6,8 +6,8 @@ The testbuild involves Dear imgui, cereal, glfw and glad dependencies for testin
 
 ## Screenshots
 ![a relative link](Images/Shadow%20casting%20c++.PNG)
-![a relative link](Images/Chains c++.PNG)
-![a relative link](Images/slice c++.PNG)
+![a relative link](Images/Chains%20c++.PNG)
+![a relative link](Images/slice%20c++.PNG)
 
 ## Feature List
 ### Physics
