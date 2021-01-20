@@ -16,6 +16,7 @@ public:
 			world.addBody(ramp);
 			ramp->setOrientation(-0.2f);
 			ramp->setDensity(0.0f);
+			ramp->restitution = 0.0f;
 		}
 
 		for (unsigned int i = 0; i < 3; i++) {

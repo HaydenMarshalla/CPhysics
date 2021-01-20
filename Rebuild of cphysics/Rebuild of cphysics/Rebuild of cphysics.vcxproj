@@ -23,7 +23,7 @@
     <ClCompile Include="src\Arbiter.cpp" />
     <ClCompile Include="src\Body.cpp" />
     <ClCompile Include="src\Circle.cpp" />
-    <ClCompile Include="src\Joints.cpp" />
+    <ClCompile Include="src\Joint.cpp" />
     <ClCompile Include="src\JointToBody.cpp" />
     <ClCompile Include="src\JointToPoint.cpp" />
     <ClCompile Include="src\ParticleExplosion.cpp" />
@@ -50,7 +50,6 @@
     <ClInclude Include="include\CPhysics\Body.h" />
     <ClInclude Include="include\CPhysics\Circle.h" />
     <ClInclude Include="include\CPhysics\CPhysics.h" />
-    <ClInclude Include="include\CPhysics\Explosion.h" />
     <ClInclude Include="include\CPhysics\Joint.h" />
     <ClInclude Include="include\CPhysics\JointToBody.h" />
     <ClInclude Include="include\CPhysics\JointToPoint.h" />

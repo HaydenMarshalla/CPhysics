@@ -26,7 +26,7 @@ public:
 		camera.zoom = 5.0f;
 	}
 
-	void step(real dt, int solver_iterations) override
+	void step(real dt, unsigned int solver_iterations) override
 	{
 		world.step(dt, solver_iterations);
 		for (Slice& s : slices) {

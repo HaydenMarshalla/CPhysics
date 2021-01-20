@@ -1,8 +1,11 @@
-#include "../testbed/Render.h"
 #include "CPhysics/Arbiter.h"
-#include "CPhysics/Shape.h"
 #include "CPhysics/Circle.h"
 #include "CPhysics/Polygon.h"
+
+#include <algorithm>
+
+static const real BIAS_RELATIVE = 0.95f;
+static const real BIAS_ABSOLUTE = 0.01f;
 
 class AxisData {
 public:
@@ -55,16 +58,16 @@ void Arbiter::narrowPhase() {
 	}
 }
 
-void Arbiter::penetrationResolution()
+void Arbiter::penetrationResolution(real allowance, real posCorrection)
 {
-	real penetrationTolerance = penetration - settings.PENETRATION_ALLOWANCE;
+	real penetrationTolerance = penetration - allowance;
 
 	if (penetrationTolerance <= 0.0f) {
 		return;
 	}
 
 	real totalMass = A->mass + B->mass;
-	real correction = (penetrationTolerance * settings.PENETRATION_CORRECTION) / totalMass;
+	real correction = (penetrationTolerance * posCorrection) / totalMass;
 	A->position += normal * (-A->mass * correction);
 	B->position += normal * (B->mass * correction);
 }
@@ -218,7 +221,7 @@ int clip(Vectors2D n, real offset, Vectors2D* face) {
 }
 
 bool selectionBias(real a, real b) {
-	return a >= b * settings.BIAS_RELATIVE + a * settings.BIAS_ABSOLUTE;
+	return a >= b * BIAS_RELATIVE + a * BIAS_ABSOLUTE;
 }
 
 void findAxisOfMinPenetration(AxisData& data, Polygon* A, Polygon* B) {

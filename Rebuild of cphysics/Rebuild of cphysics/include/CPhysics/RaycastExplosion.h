@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Explosion.h"
 #include "Rayscatter.h"
 
-class RaycastExplosion : public Explosion
-{
+class RaycastExplosion {
 public:
 	RaycastExplosion(const Vectors2D& epicentre, unsigned int noOfRays, real distance,
-	                 const std::vector<Body*>& worldBodies);
+		const std::vector<Body*>& worldBodies);
 
-	void changeEpicentre(const Vectors2D& v) override;
-	void update(const std::vector<Body*>& worldBodies) override;
-	void applyBlastImpulse(real blastPower) override;
+	void changeEpicentre(const Vectors2D& v);
+	void update(const std::vector<Body*>& worldBodies);
+	void applyBlastImpulse(real blastPower);
 
 	Rayscatter& getRayscatter() { return rayScatter; }
 private:

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Vectors2D.h"
-#include "Body.h"
 #include "Arbiter.h"
 #include "Joint.h"
 
 #include <vector>
+
+class Body;
 
 class World
 {

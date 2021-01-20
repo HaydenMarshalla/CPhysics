@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CPhysics/Vectors2D.h"
 #include "CPhysics/World.h"
 #include "CPhysics/RaycastExplosion.h"
 #include "CPhysics/ProximityExplosion.h"
@@ -20,7 +19,7 @@ public:
 	void generateRandomCircle(const Vectors2D& location, const real minRadius, const real maxRadius);
 	void buildShelf(real x, real y);
 	void createParticleExplosion(const Vectors2D& location);
-	virtual void step(real dt, int solver_iterations);
+	virtual void step(real dt, unsigned int solver_iterations);
 	void render();
 	void updateProximity(const Vectors2D& pw);
 	void updateRaycast(const Vectors2D& pw);

@@ -1,19 +1,13 @@
-#include <chrono>
-
 #include "cereal/archives/binary.hpp"
 #include "Settings.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-
-#include "Test.h"
-
-#include <iostream>
-#include <fstream>
-#include <thread>
-
 #include "Tests/pch.h"
+
+#include <fstream>
+
 
 GLFWwindow* window = nullptr;
 std::string fileName = "../Rebuild of cphysics/testbed/settings.bin";
@@ -103,8 +97,8 @@ static void glfwErrorCallback(int error, const char* description)
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	settings.window_width = width;
-	settings.window_height = height;
+	camera.window_width = width;
+	camera.window_height = height;
 	glViewport(0, 0, width, height);
 }
 
@@ -259,7 +253,7 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
 			settings.singleStep = false;
 			break;
 		case GLFW_KEY_TAB:
-			settings.showUI = !settings.showUI;
+			camera.showUi = !camera.showUi;
 			break;
 		case GLFW_KEY_COMMA:
 			if (settings.testIndex != 0)
@@ -303,6 +297,8 @@ inline bool checkFileExists(const std::string& name) {
 
 //Saves settings via binary serialization
 void saveSettings(const std::string& fileName) {
+	settings.window_width = camera.window_width;
+	settings.window_height = camera.window_height;
 	std::ofstream is(fileName, std::ios::binary);
 	{
 		cereal::BinaryOutputArchive ar(is);
@@ -382,7 +378,7 @@ static void initImgui() {
 		assert(false);
 	}
 
-	settings.showUI = true;
+	camera.showUi = true;
 }
 
 static void applyImguiStyle()
@@ -425,11 +421,11 @@ static void applyImguiStyle()
 }
 
 static void updateUI() {
-	if (settings.showUI)
+	if (camera.showUi)
 	{
 		ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
 		ImGui::SetNextWindowSize(ImVec2(220.0f, static_cast<float>(settings.window_height) - 20.0f));
-		ImGui::Begin("Controls", &settings.showUI, ImGuiWindowFlags_NoResize);
+		ImGui::Begin("Controls", &camera.showUi, ImGuiWindowFlags_NoResize);
 
 		ImGui::Text("Solver options");
 		ImGui::Separator();
@@ -505,12 +501,14 @@ void instructions()
 	ImGui::SetNextWindowBgAlpha(0.0f);
 	ImGui::Begin("Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
 	ImGui::End();
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowBorderSize = 0.0f;
 	if (settings.pause) {
 		debugDraw.renderString(240.0f, 30.0f, "-------PAUSED-------");
 	}
 
-	if (settings.showUI) {
-		debugDraw.renderString(240.0f, 10.0, "tab: hide/show controls | comma: --demo | period: ++demo | p: pause | r: restart | z: zoom in | x: zoom out | home: reset camera | escape: quit");
+	if (camera.showUi) {
+		debugDraw.renderString(240.0f, 10.0, "tab: hide/show controls | comma: --demo | period: ++demo | p: pause | r: restart | z: zoom out | x: zoom in | home: reset camera | escape: quit");
 		currentTest->drawInstructions();
 	}
 }
@@ -539,6 +537,9 @@ int main()
 	if (checkFileExists(fileName)) {
 		loadSettings(fileName);
 	}
+	
+	camera.window_width = settings.window_width;
+	camera.window_height = settings.window_height;
 
 	switchDemo(0);
 
@@ -559,10 +560,9 @@ int main()
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		step();
-
+		
 		updateUI();
+		step();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

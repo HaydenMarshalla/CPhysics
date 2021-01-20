@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../Test.h"
-#include "CPhysics/Circle.h"
-#include "CPhysics/Polygon.h"
 
 class Drag final : public Test
 {

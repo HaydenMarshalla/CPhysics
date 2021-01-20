@@ -1,4 +1,3 @@
-#include "CPhysics/Body.h"
 #include "CPhysics/Shape.h"
 
 Body::Body(Shape* shapeIn, real x, real y)

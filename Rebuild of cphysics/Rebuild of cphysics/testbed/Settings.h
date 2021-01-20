@@ -14,7 +14,7 @@ struct Settings {
 
 	void serialize(Archive& archive)
 	{
-		archive(window_height, window_width, drawShapes, drawJoints, drawAABBs, drawContacts, drawCOMs, hertz, solverIterations, singleStep, showUI, BIAS_RELATIVE, BIAS_ABSOLUTE, PENETRATION_ALLOWANCE, PENETRATION_CORRECTION, pause, testIndex);
+		archive(window_height, window_width, drawShapes, drawJoints, drawAABBs, drawContacts, drawCOMs, hertz, solverIterations, singleStep, PENETRATION_ALLOWANCE, PENETRATION_CORRECTION, pause, testIndex);
 	}
 
 	void Reset() {
@@ -34,10 +34,6 @@ struct Settings {
 
 		singleStep = false;
 		pause = false;
-		showUI = true;
-
-		BIAS_RELATIVE = 0.95f;
-		BIAS_ABSOLUTE = 0.01f;
 		testIndex = 0;
 	}
 
@@ -83,7 +79,6 @@ struct Settings {
 	int solverIterations;
 	bool singleStep;
 	bool pause;
-	bool showUI;
 	unsigned int testIndex;
 
 	Colour background;
@@ -112,14 +107,12 @@ struct Settings {
 	Colour rayToBody;
 	Colour projectedRay;
 	Colour scatterRays;
-	float RAY_DOT = 5.0;
+	float RAY_DOT = 5.0f;
 	Colour shadow = Colour(0.5f, 0.5f, 0.5f, 0.5f);
 
 	//Testbed related drawing
 	Colour gridLines = Colour(1.0f, 1.0f, 1.0f, 1.0f);
 	Colour gridAxis = Colour(1.0f, 1.0f, 1.0f, 1.0f);
-	float BIAS_RELATIVE;
-	float BIAS_ABSOLUTE;
 	float PENETRATION_ALLOWANCE = 0.01f;
 	float PENETRATION_CORRECTION = 0.1f;
 };
@@ -151,3 +144,5 @@ inline T max(T a, T b)
 {
 	return a > b ? a : b;
 }
+
+extern Settings settings;

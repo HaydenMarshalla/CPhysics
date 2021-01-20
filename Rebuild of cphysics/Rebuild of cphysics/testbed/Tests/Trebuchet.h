@@ -75,7 +75,7 @@ public:
 		camera.zoom = 20.0f;
 	}
 
-	void step(real dt, int solver_iterations) override
+	void step(real dt, unsigned int solver_iterations) override
 	{
 		world.step(dt, solver_iterations);
 		camera.center.set(world.getBodies()[3]->position.x, camera.center.y);

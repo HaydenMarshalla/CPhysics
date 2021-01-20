@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-
 #include "Shape.h"
+
+#include <vector>
 
 class Polygon : public Shape
 {

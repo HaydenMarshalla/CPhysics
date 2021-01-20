@@ -1,7 +1,6 @@
 #include "Test.h"
 
-#include <cassert>
-
+#include "Settings.h"
 #include "CPhysics/Circle.h"
 #include "CPhysics/Polygon.h"
 
@@ -78,12 +77,12 @@ void Test::generateBoxOfObjects()
 	world.addBody(left);
 
 	{
-		generateRandomObjects(Vectors2D(-880.0f, -480.0f), Vectors2D(880.0f, 480.0f), 30, 100);
+		generateRandomObjects(Vectors2D(-880.0f, -480.0f), Vectors2D(880.0f, 480.0f), 25, 100);
 		world.setStaticWorld();
 	}
 }
 
-void Test::step(real dt, int solver_iterations)
+void Test::step(real dt, unsigned int solver_iterations)
 {
 	world.step(dt, solver_iterations);
 }

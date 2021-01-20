@@ -1,9 +1,10 @@
 #include "Render.h"
+#include "imgui.h"
+#include "CPhysics/Joint.h"
+#include "CPhysics/Matrix2D.h"
+#include "Colour.h"
 
 #include <iostream>
-
-
-#include "imgui.h"
 
 Render debugDraw;
 Camera camera;
@@ -336,14 +337,14 @@ void Render::Destroy()
 
 void Render::renderString(real x, real y, const char* s)
 {
-	if (!settings.showUI)
+	if (!camera.showUi)
 	{
 		return;
 	}
 
 	va_list arg;
 	va_start(arg, s);
-	ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
+	ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus );
 	ImGui::SetCursorPos(ImVec2(float(x), float(y)));
 	ImGui::TextColoredV(ImColor(255, 255, 255, 255), s, arg);
 	ImGui::End();
@@ -501,11 +502,11 @@ void Render::drawCross(const Vectors2D& centre, const Vectors2D& line, const Col
 {
 	Vectors2D beginningOfLine = centre + line;
 	Vectors2D endOfLine = centre - line;
-	debugDraw.drawLine(beginningOfLine, endOfLine, settings.joints);
+	debugDraw.drawLine(beginningOfLine, endOfLine, colour);
 
 	beginningOfLine = centre + line.normal();
 	endOfLine = centre - line.normal();
-	debugDraw.drawLine(beginningOfLine, endOfLine, settings.joints);
+	debugDraw.drawLine(beginningOfLine, endOfLine, colour);
 }
 
 void Render::drawShadowPolygon(const Ray& ray1, const Ray& ray2, const Vectors2D& epicentre, const Colour& colour)
@@ -517,8 +518,8 @@ void Render::drawShadowPolygon(const Ray& ray1, const Ray& ray2, const Vectors2D
 
 Vectors2D Camera::convertScreenToWorld(const Vectors2D& screenPoint) const
 {
-	float w = float(settings.window_width);
-	float h = float(settings.window_height);
+	float w = float(camera.window_width);
+	float h = float(camera.window_height);
 	float u = screenPoint.x / w;
 	float v = (h - screenPoint.y) / h;
 
@@ -537,8 +538,8 @@ Vectors2D Camera::convertScreenToWorld(const Vectors2D& screenPoint) const
 
 Vectors2D Camera::convertWorldToScreen(const Vectors2D& worldPoint) const
 {
-	float w = static_cast<float>(settings.window_width);
-	float h = static_cast<float>(settings.window_height);
+	float w = static_cast<float>(window_width);
+	float h = static_cast<float>(window_height);
 	float ratio = w / h;
 	Vectors2D extents(ratio * 25.0f, 25.0f);
 	extents *= zoom;
@@ -559,8 +560,8 @@ Vectors2D Camera::convertWorldToScreen(const Vectors2D& worldPoint) const
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 void Camera::generateProjectionMatrix(float* m, float zBias) const
 {
-	float w = static_cast<float>(settings.window_width);
-	float h = static_cast<float>(settings.window_height);
+	float w = static_cast<float>(window_width);
+	float h = static_cast<float>(window_height);
 	float ratio = w / h;
 	Vectors2D extents(ratio * 25.0f, 25.0f);
 	extents *= zoom;

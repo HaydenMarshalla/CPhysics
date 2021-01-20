@@ -38,7 +38,7 @@ The testbuild involves Dear imgui, cereal, glfw and glad dependencies for testin
 ### Testbed
 - OpenGL for demo graphics
 - Dear imgui for GUI
-- Junit4 for junit tests
+- CppUnitTestFramework for unit tests
 - cereal for serialization of settings
 
 ### Future features to implement

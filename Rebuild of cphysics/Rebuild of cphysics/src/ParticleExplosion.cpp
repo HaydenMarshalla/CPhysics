@@ -1,7 +1,6 @@
 #include "CPhysics/ParticleExplosion.h"
 
 #include "CPhysics/Circle.h"
-#include "CPhysics/Matrix2D.h"
 
 ParticleExplosion::ParticleExplosion(const Vectors2D& epicentre, unsigned noOfParticles, real life, World* world)
 {

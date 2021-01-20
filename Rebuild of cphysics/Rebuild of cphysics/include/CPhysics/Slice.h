@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Ray.h"
-#include "Vectors2D.h"
 #include "World.h"
 
 class Slice {

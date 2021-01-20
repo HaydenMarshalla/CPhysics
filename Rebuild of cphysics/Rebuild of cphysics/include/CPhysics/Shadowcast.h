@@ -1,7 +1,5 @@
 #pragma once
-#include <vector>
 
-#include "Body.h"
 #include "Ray.h"
 
 class RayAngleInformation {

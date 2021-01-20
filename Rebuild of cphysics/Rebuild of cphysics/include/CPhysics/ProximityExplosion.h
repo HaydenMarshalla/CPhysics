@@ -3,19 +3,16 @@
 #include <vector>
 
 #include "Body.h"
-#include "Explosion.h"
 
-struct Vectors2D;
-
-class ProximityExplosion : public Explosion
+class ProximityExplosion
 {
 public:
 	ProximityExplosion(const Vectors2D& centrePoint, unsigned int radius);
 
 	void updateLinesToBody();
-	void changeEpicentre(const Vectors2D& v) override;
-	void update(const std::vector<Body*>& bodiesToEvaluate) override;
-	void applyBlastImpulse(real blastPower) override;
+	void changeEpicentre(const Vectors2D& v);
+	void update(const std::vector<Body*>& bodiesToEvaluate);
+	void applyBlastImpulse(real blastPower);
 
 	Vectors2D const& getEpicentre() const { return epicentre; }
 	unsigned int const& getProximity() const { return proximity; }

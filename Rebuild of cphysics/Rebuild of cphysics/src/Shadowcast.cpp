@@ -1,10 +1,8 @@
 #include "CPhysics/Shadowcast.h"
-
-#include <algorithm>
-
 #include "CPhysics/Circle.h"
 #include "CPhysics/Polygon.h"
-#include "CPhysics/Matrix2D.h"
+
+#include <algorithm>
 
 ShadowCasting::ShadowCasting(const Vectors2D& startPoint, unsigned int distance)
 {

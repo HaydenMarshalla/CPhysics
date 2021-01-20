@@ -1,7 +1,8 @@
 #pragma once
-#include <vector>
 
 #include "Body.h"
+
+#include <vector>
 
 class RayInformation {
 public:

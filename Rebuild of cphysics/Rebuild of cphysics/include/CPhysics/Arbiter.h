@@ -1,9 +1,7 @@
 #pragma once
+#include "Vectors2D.h"
 
-#include "Body.h"
-
-class Circle;
-class Polygon;
+class Body;
 
 class Arbiter
 {
@@ -12,7 +10,7 @@ public:
 
 	void narrowPhase();
 	void solve();
-	void penetrationResolution();
+	void penetrationResolution(real allowance, real correction);
 	
 	const unsigned int& getContactCount() const { return contactCount; }
 	const Vectors2D& getContacts(int i) const { return contacts[i]; }

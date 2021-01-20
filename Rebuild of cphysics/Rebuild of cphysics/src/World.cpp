@@ -1,11 +1,9 @@
 #include "CPhysics/World.h"
 
-#include <cassert>
-
 #include "../testbed/Render.h"
-#include "CPhysics/Shape.h"
+#include "../testbed/Settings.h"
 #include "CPhysics/Polygon.h"
-#include "CPhysics/Circle.h"
+#include "CPhysics/Body.h"
 
 World::World()
 {
@@ -62,7 +60,7 @@ void World::collisionCheck()
 	}
 }
 
-void World::step(real dt, unsigned iterations)
+void World::step(real dt, unsigned int iterations)
 {
 	collisionCheck();
 
@@ -105,7 +103,7 @@ void World::step(real dt, unsigned iterations)
 	}
 
 	for (Arbiter contact : contacts) {
-		contact.penetrationResolution();
+		contact.penetrationResolution(settings.PENETRATION_ALLOWANCE, settings.PENETRATION_CORRECTION);
 	}
 }
 
