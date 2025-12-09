@@ -1,72 +1,77 @@
-# CPhysics
+ This is a 2D rigid body physics engine written in C++ for game development, featuring collision detection, constraint solving, and advanced capabilities like
+  explosions and object slicing.
 
-CPhysics is a 2D physics engine written in C++ with the intention of being used in games. It it built with no third-party-library dependencies other than various standard c header files such as cmath.
+  Tech Stack
 
-The testbuild involves Dear imgui, cereal, glfw and glad dependencies for testing purposes.
+  - Core: C++ with minimal dependencies
+  - Rendering: OpenGL 3.3+, GLAD, GLFW
+  - UI: Dear ImGui
+  - Serialization: Cereal, RapidJSON
+  - Build: Visual Studio 2019+ (MSVC)
+  - Testing: CppUnitTestFramework
 
+  Project Structure
+
+  Rebuild of cphysics/
+  ├── include/CPhysics/          # Core physics headers (20 files)
+  ├── src/                       # Physics implementation (~1,562 LOC)
+  ├── testbed/                   # OpenGL visualization + demos
+  │   ├── Tests/                 # 15 physics demonstration scenarios
+  │   └── imgui/                 # Dear ImGui integration
+  ├── dependencies/              # Third-party libraries
+  └── UnitTests/                 # Unit test suite
+
+  Core Components
+
+  Physics Engine:
+  - World.h/cpp - Main simulation container, time-stepping, gravity
+  - Body.h/cpp - Rigid bodies with mass, velocity, forces, torque
+  - Shape.h - Abstract base (Circle, Polygon implementations)
+  - Arbiter.h/cpp - Collision detection and contact resolution
+  - Joint.h - Constraint system (body-to-body, body-to-point springs)
+
+  Collision System:
+  - Broadphase: AABB overlap testing
+  - Narrowphase: Circle-circle, circle-polygon, polygon-polygon
+  - Sequential Impulses solver with friction and restitution
+  - Contact manifolds (up to 2 contact points)
+
+  Advanced Features:
+  - Slice.h - Cut objects along arbitrary lines
+  - ParticleExplosion.h, ProximityExplosion.h, RaycastExplosion.h - 3 explosion types
+  - Shadowcast.h - Visibility/shadow calculations
+  - Ray.h - Ray casting for queries
+
+  Testbed Demos (15 scenarios):
+  - Chains, Trebuchet, Newton's Cradle
+  - Friction, Restitution, Drag testing
+  - Stack, Bouncing ball, Wrecking ball
+  - All 3 explosion types, Object slicing
+  - Line of sight, Ray casting
+
+  Architecture Highlights
+
+  1. Polymorphic shape system - Virtual base class for extensibility
+  2. Sequential Impulses solver - Iterative constraint resolution
+  3. Spring-based joints - Configurable stiffness and damping
+  4. AABB optimization - Broadphase filtering before collision checks
+  5. Data-driven config - Serializable settings with ImGui controls
+
+  Key Features
+
+  - Pure C++ implementation (no external physics library)
+  - Convex polygon support (arbitrary vertex count)
+  - Stable object stacking
+  - Momentum conservation
+  - Static/dynamic friction
+  - Customizable restitution (bounciness)
+  - Real-time parameter tuning via GUI
+  - Save/load settings
+
+  The testbed (testbed/Main.cpp) provides an interactive OpenGL window where you can run demos, visualize physics (AABBs, contacts, centers of mass), and tweak solver
+  parameters in real-time.
+  
 ## Screenshots
 ![a relative link](Images/Shadow%20casting%20c++.PNG)
 ![a relative link](Images/Chains%20c++.PNG)
 ![a relative link](Images/slice%20c++.PNG)
-
-## Feature List
-### Physics
-- Rigid body dynamics
-- Primitive joint constraints
-- Momentum
-- Friction
-- Restitution
-- Collision response (Sequential Impulses Solver)
-- Stable object stacking
-- Orbits
-- Explosions
-- Object slicing
-
-### Collision
-- AABB queries (Broadphase)
-- One-shot contact manifolds
-- Discrete collision detection
-- Convex polygon and circle collisions
-- Ray casting
-- Position resolution handling
-
-### Explosion types
-- Proximity
-- Ray casting
-- Particle
-
-### Testbed
-- OpenGL for demo graphics
-- Dear imgui for GUI
-- CppUnitTestFramework for unit tests
-- cereal for serialization of settings
-
-### Future features to implement
-- Multi body shapes
-    - collisions optimizations for said shapes
-- Demos illustrating limitations within the engine
-- Dynamic tree broadphase
-- Continuous collision detection
-- Island solution and sleep management
-- Extra types of joints (eg Revolute, pulley)
-- Fluid and soft body simulation
-
-## Running testbed demo
-- Clone/download the project onto your computer.
-- Open visual studio.
-- Click open local folder and navigate to the folder named "Rebuild of cphysics" that you cloned/downloaded in step 1
-- Select this folder and open it in visual studio.
-- Double click on Rebuild of cphysics.sln
-- Select the debug options "release" and "x86". Run the program.
-
-## Documentation
-TO DO
-
-## Future plans for the project
-At the moment, I am focusing on other projects however I will be coming back to this at a later date to add improvements.
-
-## License
-CPhysics is developed by Hayden Marshall and falls under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). See LICENSE.txt for more information.
-
-## Credits
-Dirk Gregorius and Erin Catto's online resources have proven instrumental in learning how to approach and construct a physics engine. Their gdc talks, documentation and numerous physics engine forum posts have been of great use and would highly recommend looking them up for anyone interested in learning about physics engines.
