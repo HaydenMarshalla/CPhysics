@@ -1,0 +1,74 @@
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Build directories
+build/
+out/
+bin/
+lib/
+x64/
+x86/
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.VC.opendb
+
+# JetBrains IDEs (CLion, etc.)
+.idea/
+cmake-build-*/
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Libraries
+*.lib
+*.a
+*.la
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Generated files
+*.log
+*.tlog
+
+# User settings
+imgui.ini
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
