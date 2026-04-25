@@ -47,7 +47,7 @@ jobs:
 
       # ---- Configure ----
       - name: Configure CMake
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCPHYSICS_WARNINGS_AS_ERRORS=ON
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
