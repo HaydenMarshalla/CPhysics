@@ -12,7 +12,7 @@ const real maxf = FLT_MAX;
 
 //Checks to make sure that a number is not NaN or infinity.
 inline bool isValidCheck(real x) {
-	return isfinite(x);
+	return std::isfinite(x);
 }
 
 struct Vectors2D

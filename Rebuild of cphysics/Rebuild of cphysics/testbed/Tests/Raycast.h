@@ -42,7 +42,7 @@ public:
 	}
 
 	void step(float dt, unsigned int solver_iterations) override {
-		world.step(dt, solver_iterations);
+		Test::step(dt, solver_iterations);
 		rotateRay(0);
 	}
 };

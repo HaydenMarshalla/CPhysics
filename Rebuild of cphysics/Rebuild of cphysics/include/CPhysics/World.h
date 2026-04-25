@@ -17,6 +17,7 @@ public:
 	void setGravity(const Vectors2D& gravity);
 
 	void step(real dt, unsigned int iterations);
+	void step(real dt, unsigned int iterations, real penetrationAllowance, real penetrationCorrection);
 	void addBody(Body* body);
 	void removeBody(Body* body);
 	void removeAllBodies();

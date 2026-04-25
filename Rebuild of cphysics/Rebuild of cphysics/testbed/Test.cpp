@@ -84,7 +84,7 @@ void Test::generateBoxOfObjects()
 
 void Test::step(real dt, unsigned int solver_iterations)
 {
-	world.step(dt, solver_iterations);
+	world.step(dt, solver_iterations, settings.PENETRATION_ALLOWANCE, settings.PENETRATION_CORRECTION);
 }
 
 void Test::render()

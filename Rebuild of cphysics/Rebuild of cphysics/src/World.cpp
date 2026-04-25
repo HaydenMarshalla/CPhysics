@@ -1,9 +1,9 @@
 #include "CPhysics/World.h"
 
-#include "../testbed/Render.h"
-#include "../testbed/Settings.h"
-#include "CPhysics/Polygon.h"
 #include "CPhysics/Body.h"
+
+static const real DEFAULT_PENETRATION_ALLOWANCE = 0.01f;
+static const real DEFAULT_PENETRATION_CORRECTION = 0.1f;
 
 World::World()
 {
@@ -62,6 +62,11 @@ void World::collisionCheck()
 
 void World::step(real dt, unsigned int iterations)
 {
+	step(dt, iterations, DEFAULT_PENETRATION_ALLOWANCE, DEFAULT_PENETRATION_CORRECTION);
+}
+
+void World::step(real dt, unsigned int iterations, real penetrationAllowance, real penetrationCorrection)
+{
 	collisionCheck();
 
 	for (unsigned int i = 0; i < bodies.size(); i++) {
@@ -103,7 +108,7 @@ void World::step(real dt, unsigned int iterations)
 	}
 
 	for (Arbiter contact : contacts) {
-		contact.penetrationResolution(settings.PENETRATION_ALLOWANCE, settings.PENETRATION_CORRECTION);
+		contact.penetrationResolution(penetrationAllowance, penetrationCorrection);
 	}
 }
 

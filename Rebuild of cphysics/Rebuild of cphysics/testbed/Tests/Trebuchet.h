@@ -77,7 +77,7 @@ public:
 
 	void step(real dt, unsigned int solver_iterations) override
 	{
-		world.step(dt, solver_iterations);
+		Test::step(dt, solver_iterations);
 		camera.center.set(world.getBodies()[3]->position.x, camera.center.y);
 	}
 
