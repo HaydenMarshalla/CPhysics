@@ -342,13 +342,10 @@ void Render::renderString(real x, real y, const char* s)
 		return;
 	}
 
-	va_list arg;
-	va_start(arg, s);
 	ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus );
 	ImGui::SetCursorPos(ImVec2(float(x), float(y)));
-	ImGui::TextColoredV(ImColor(255, 255, 255, 255), s, arg);
+	ImGui::TextColored(ImColor(255, 255, 255, 255), "%s", s);
 	ImGui::End();
-	va_end(arg);
 }
 
 void Render::drawCircle(const Vectors2D& center, real radius, const Colour& color)

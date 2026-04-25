@@ -70,6 +70,18 @@
 
   The testbed (testbed/Main.cpp) provides an interactive OpenGL window where you can run demos, visualize physics (AABBs, contacts, centers of mass), and tweak solver
   parameters in real-time.
+
+  Build (CMake)
+
+  From the repository root:
+
+  ```powershell
+  cmake -S . -B build
+  cmake --build build --config Release
+  ctest --test-dir build -C Release
+  ```
+
+  CMake produces `cphysics`, `cphysics_testbed`, and `cphysics_geometry_regression`. The testbed keeps the Visual Studio working-directory behavior; when running it manually outside Visual Studio, use the `testbed/` directory as the working directory so `../Rebuild of cphysics/testbed/settings.bin` resolves as expected.
   
 ## Screenshots
 ![a relative link](Images/Shadow%20casting%20c++.PNG)

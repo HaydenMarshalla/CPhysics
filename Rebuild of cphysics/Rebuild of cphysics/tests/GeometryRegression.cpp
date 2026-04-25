@@ -5,8 +5,19 @@
 #include "CPhysics/Slice.h"
 #include "CPhysics/World.h"
 
-#include <cassert>
 #include <cmath>
+#include <cstdlib>
+#include <iostream>
+
+#define REQUIRE(condition) \
+	do \
+	{ \
+		if (!(condition)) \
+		{ \
+			std::cerr << "Requirement failed: " #condition << " at " << __FILE__ << ":" << __LINE__ << '\n'; \
+			std::abort(); \
+		} \
+	} while (false)
 
 namespace {
 bool nearlyEqual(real a, real b)
@@ -23,9 +34,9 @@ void rayHitsVerticalPolygonEdge()
 	ray.updateProjection(bodies);
 
 	const RayInformation& hit = ray.getRayInformation();
-	assert(hit.getB() == &box);
-	assert(nearlyEqual(hit.getCoord().x, 0.0f));
-	assert(nearlyEqual(hit.getCoord().y, -1.0f));
+	REQUIRE(hit.getB() == &box);
+	REQUIRE(nearlyEqual(hit.getCoord().x, 0.0f));
+	REQUIRE(nearlyEqual(hit.getCoord().y, -1.0f));
 }
 
 void rayStartingInsideCircleFindsExitPoint()
@@ -37,9 +48,9 @@ void rayStartingInsideCircleFindsExitPoint()
 	ray.updateProjection(bodies);
 
 	const RayInformation& hit = ray.getRayInformation();
-	assert(hit.getB() == &circle);
-	assert(nearlyEqual(hit.getCoord().x, 1.0f));
-	assert(nearlyEqual(hit.getCoord().y, 0.0f));
+	REQUIRE(hit.getB() == &circle);
+	REQUIRE(nearlyEqual(hit.getCoord().x, 1.0f));
+	REQUIRE(nearlyEqual(hit.getCoord().y, 0.0f));
 }
 
 void sliceCollectsOrderedPolygonIntersections()
@@ -51,11 +62,11 @@ void sliceCollectsOrderedPolygonIntersections()
 	slice.updateProjection(bodies);
 
 	const std::vector<RayInformation>& hits = slice.getIntersectingBodiesInfo();
-	assert(hits.size() == 2);
-	assert(hits[0].getB() == &box);
-	assert(hits[1].getB() == &box);
-	assert(nearlyEqual(hits[0].getCoord().y, -1.0f));
-	assert(nearlyEqual(hits[1].getCoord().y, 1.0f));
+	REQUIRE(hits.size() == 2);
+	REQUIRE(hits[0].getB() == &box);
+	REQUIRE(hits[1].getB() == &box);
+	REQUIRE(nearlyEqual(hits[0].getCoord().y, -1.0f));
+	REQUIRE(nearlyEqual(hits[1].getCoord().y, 1.0f));
 }
 
 void slicingCircleDoesNotDeleteBody()
@@ -68,8 +79,62 @@ void slicingCircleDoesNotDeleteBody()
 	slice.updateProjection(world.getBodies());
 	slice.sliceObjects(world);
 
-	assert(world.getBodies().size() == 1);
-	assert(world.getBodies()[0] == circle);
+	REQUIRE(world.getBodies().size() == 1);
+	REQUIRE(world.getBodies()[0] == circle);
+}
+
+void slicingBoxCreatesTwoBodies()
+{
+	World world;
+	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
+
+	Slice slice(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 10.0f);
+	slice.updateProjection(world.getBodies());
+	slice.sliceObjects(world);
+
+	REQUIRE(world.getBodies().size() == 2);
+}
+
+void slicingAlongPolygonEdgeDoesNotCreateInvalidPiece()
+{
+	World world;
+	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
+
+	Slice slice(Vectors2D(-2.0f, -1.0f), Vectors2D(1.0f, 0.0f), 4.0f);
+	slice.updateProjection(world.getBodies());
+	slice.sliceObjects(world);
+
+	REQUIRE(world.getBodies().size() == 1);
+}
+
+void slicedBodyCanBeSlicedAgain()
+{
+	World world;
+	world.addBody(new Body(new Polygon(2.0f, 2.0f), 0.0f, 0.0f));
+
+	Slice firstSlice(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 6.0f);
+	firstSlice.updateProjection(world.getBodies());
+	firstSlice.sliceObjects(world);
+	REQUIRE(world.getBodies().size() == 2);
+
+	Slice secondSlice(Vectors2D(-3.0f, 0.5f), Vectors2D(1.0f, 0.0f), 6.0f);
+	secondSlice.updateProjection(world.getBodies());
+	secondSlice.sliceObjects(world);
+
+	REQUIRE(world.getBodies().size() > 2);
+}
+
+void oneSliceCanCutMultipleBodies()
+{
+	World world;
+	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
+	world.addBody(new Body(new Polygon(1.0f, 1.0f), 4.0f, 0.0f));
+
+	Slice slice(Vectors2D(-2.0f, 0.0f), Vectors2D(1.0f, 0.0f), 8.0f);
+	slice.updateProjection(world.getBodies());
+	slice.sliceObjects(world);
+
+	REQUIRE(world.getBodies().size() == 4);
 }
 }
 
@@ -79,5 +144,9 @@ int main()
 	rayStartingInsideCircleFindsExitPoint();
 	sliceCollectsOrderedPolygonIntersections();
 	slicingCircleDoesNotDeleteBody();
+	slicingBoxCreatesTwoBodies();
+	slicingAlongPolygonEdgeDoesNotCreateInvalidPiece();
+	slicedBodyCanBeSlicedAgain();
+	oneSliceCanCutMultipleBodies();
 	return 0;
 }

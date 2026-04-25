@@ -341,3 +341,9 @@ healthchecksdb
 
 #settings
 *.bin
+
+# CMake build output
+build/
+build-*/
+cmake-build-*/
+out/

@@ -2,6 +2,14 @@
 
 These tests are intentionally framework-free so the core engine can be checked without launching the OpenGL testbed.
 
+From the repository root, build and run with CMake:
+
+```powershell
+cmake -S . -B build
+cmake --build build --config Release --target cphysics_geometry_regression
+ctest --test-dir build -C Release
+```
+
 From the repository root, build and run with MinGW g++:
 
 ```powershell

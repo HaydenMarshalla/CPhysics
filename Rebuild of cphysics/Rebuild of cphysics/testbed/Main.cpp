@@ -7,6 +7,7 @@
 #include "Tests/pch.h"
 
 #include <fstream>
+#include <sys/stat.h>
 
 
 GLFWwindow* window = nullptr;

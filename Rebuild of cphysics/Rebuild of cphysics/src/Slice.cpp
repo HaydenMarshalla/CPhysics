@@ -5,6 +5,7 @@
 #include "CPhysics/Polygon.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace {
 struct SliceCandidate {
@@ -30,6 +31,42 @@ void addCircleIntersection(
 bool isSameIntersection(const SliceCandidate& a, const SliceCandidate& b)
 {
 	return distance(a.info.getCoord(), b.info.getCoord()) <= EPSILON;
+}
+
+real polygonArea(const std::vector<Vectors2D>& vertices)
+{
+	real area = 0.0f;
+	for (unsigned int i = 0, j = static_cast<unsigned int>(vertices.size() - 1); i < vertices.size(); j = i++) {
+		area += crossProduct(vertices[j], vertices[i]);
+	}
+	return std::fabs(area) * 0.5f;
+}
+
+bool isValidSlicePiece(const std::vector<Vectors2D>& vertices)
+{
+	return vertices.size() >= 3 && polygonArea(vertices) > EPSILON;
+}
+
+Vectors2D worldVertex(const Body* body, const Polygon* polygon, unsigned int index)
+{
+	return (body->shape->rotation * polygon->getVertices()[index]) + body->position;
+}
+
+void addVerticesAfterEdge(
+	std::vector<Vectors2D>& vertices,
+	const Body* body,
+	const Polygon* polygon,
+	unsigned int startEdge,
+	unsigned int endEdge)
+{
+	const unsigned int vertexCount = polygon->getVertexCount();
+	unsigned int index = (startEdge + 1) % vertexCount;
+	const unsigned int stop = (endEdge + 1) % vertexCount;
+
+	while (index != stop) {
+		vertices.push_back(worldVertex(body, polygon, index));
+		index = (index + 1) % vertexCount;
+	}
 }
 }
 
@@ -115,6 +152,10 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 void Slice::sliceObjects(World& world) {
 	for (unsigned int i = 0; i + 1 < intersectingBodiesInfo.size(); i += 2) {
 		Body* b = intersectingBodiesInfo[i].getB();
+		if (b == nullptr || b != intersectingBodiesInfo[i + 1].getB()) {
+			continue;
+		}
+
 		bool isStatic = b->mass == 0.0f;
 		if (b->shape->getType() == Polygon::ePolygon) {
 			Polygon* p = (Polygon*)b->shape;
@@ -124,20 +165,25 @@ void Slice::sliceObjects(World& world) {
 
 			int obj1firstIndex = intersection1.getIndex();
 			int secondIndex = intersection2.getIndex();
-			int obj2firstIndex = obj1firstIndex;
-
-			int totalVerticesObj1 = (obj1firstIndex + 2) + (p->getVertexCount() - secondIndex);
-			std::vector<Vectors2D> obj1Vertz;
-
-			for (unsigned int x = 0; x < obj1firstIndex + 1; x++) {
-				obj1Vertz.push_back((b->shape->rotation * p->getVertices()[x]) + b->position);
+			if (obj1firstIndex < 0 || secondIndex < 0 ||
+				obj1firstIndex >= static_cast<int>(p->getVertexCount()) ||
+				secondIndex >= static_cast<int>(p->getVertexCount()) ||
+				obj1firstIndex == secondIndex) {
+				continue;
 			}
 
-			obj1Vertz.push_back(intersectingBodiesInfo[i].getCoord());
-			obj1Vertz.push_back(intersectingBodiesInfo[i + 1].getCoord());
+			std::vector<Vectors2D> obj1Vertz;
+			obj1Vertz.push_back(intersection1.getCoord());
+			addVerticesAfterEdge(
+				obj1Vertz,
+				b,
+				p,
+				static_cast<unsigned int>(obj1firstIndex),
+				static_cast<unsigned int>(secondIndex));
+			obj1Vertz.push_back(intersection2.getCoord());
 
-			for (unsigned int x = secondIndex + 1; x < p->getVertexCount(); x++) {
-				obj1Vertz.push_back((b->shape->rotation * p->getVertices()[x]) + b->position);
+			if (!isValidSlicePiece(obj1Vertz)) {
+				continue;
 			}
 
 			Vectors2D polyCentre = findPolyCentre(obj1Vertz);
@@ -147,17 +193,20 @@ void Slice::sliceObjects(World& world) {
 			b1->restitution = b->restitution;
 			world.addBody(b1);
 
-			totalVerticesObj1 = secondIndex - obj2firstIndex + 2;
 			std::vector<Vectors2D> obj2Vertz;
-
-			int indexToAddTo = 0;
+			obj2Vertz.push_back(intersection2.getCoord());
+			addVerticesAfterEdge(
+				obj2Vertz,
+				b,
+				p,
+				static_cast<unsigned int>(secondIndex),
+				static_cast<unsigned int>(obj1firstIndex));
 			obj2Vertz.push_back(intersection1.getCoord());
 
-			for (unsigned int x = obj2firstIndex + 1; x <= secondIndex; x++) {
-				obj2Vertz.push_back((b->shape->rotation * p->getVertices()[x]) + b->position);
+			if (!isValidSlicePiece(obj2Vertz)) {
+				world.removeBody(b1);
+				continue;
 			}
-
-			obj2Vertz.push_back(intersection2.getCoord());
 
 			polyCentre = findPolyCentre(obj2Vertz);
 			Body* b2 = new Body(new Polygon(obj2Vertz), polyCentre.x, polyCentre.y);
