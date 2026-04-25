@@ -24,7 +24,7 @@ private:
 
 class ShadowCasting {
 public:
-	ShadowCasting(const Vectors2D& startPoint, unsigned int distance);
+	ShadowCasting(const Vectors2D& startPoint, real distance);
 
 	void updateProjections(const std::vector<Body*>& bodiesToEvaluate);
 
@@ -38,6 +38,6 @@ public:
 
 private:
 	std::vector<RayAngleInformation> rayData;
-	unsigned int distance;
+	real distance;
 	Vectors2D startPoint;
 };

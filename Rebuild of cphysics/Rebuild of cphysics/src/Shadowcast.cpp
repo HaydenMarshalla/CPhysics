@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-ShadowCasting::ShadowCasting(const Vectors2D& startPoint, unsigned int distance)
+ShadowCasting::ShadowCasting(const Vectors2D& startPoint, real distance)
 {
 	this->startPoint = startPoint;
 	this->distance = distance;
