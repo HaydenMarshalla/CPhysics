@@ -66,10 +66,14 @@ void Arbiter::penetrationResolution(real allowance, real posCorrection)
 		return;
 	}
 
-	real totalMass = A->mass + B->mass;
-	real correction = (penetrationTolerance * posCorrection) / totalMass;
-	A->position += normal * (-A->mass * correction);
-	B->position += normal * (B->mass * correction);
+	real totalInvMass = A->invMass + B->invMass;
+	if (totalInvMass == 0.0f) {
+		return;
+	}
+
+	Vectors2D correction = normal * ((penetrationTolerance * posCorrection) / totalInvMass);
+	A->position -= correction * A->invMass;
+	B->position += correction * B->invMass;
 }
 
 void Arbiter::circleVsCircle()
