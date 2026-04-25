@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake --build build --config Release --parallel)",
+      "Bash(cmake --build build --config Release --parallel --clean-first)",
+      "Bash(tee /tmp/build.log)",
+      "Bash(ctest --test-dir build --output-on-failure)",
+      "Bash(rm -rf build)",
+      "Bash(cmake -S . -B build -DCMAKE_BUILD_TYPE=Release)",
+      "Bash(cmake -S . -B build -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=Release)",
+      "Bash(rm -f \"Rebuild of cphysics/Rebuild of cphysics.sln\")",
+      "Bash(rm -f 'Rebuild of cphysics/Rebuild of cphysics/Rebuild of cphysics.vcxproj' 'Rebuild of cphysics/Rebuild of cphysics/Rebuild of cphysics.vcxproj.filters')",
+      "Bash(rm -rf \"Rebuild of cphysics/UnitTests\")",
+      "Bash(rm -rf \".vs\")",
+      "Bash(rm -rf \"_build\")",
+      "Bash(cmake -S . -B build -G \"MinGW Makefiles\" -DCMAKE_BUILD_TYPE=Release -DCPHYSICS_WARNINGS_AS_ERRORS=ON)",
+      "Bash(cmake --build build --parallel)",
+      "Bash(tee /tmp/b.log)"
+    ]
+  }
+}

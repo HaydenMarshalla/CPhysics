@@ -345,5 +345,6 @@ healthchecksdb
 # CMake build output
 build/
 build-*/
+_build/
 cmake-build-*/
 out/

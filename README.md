@@ -7,8 +7,30 @@
   - Rendering: OpenGL 3.3+, GLAD, GLFW
   - UI: Dear ImGui
   - Serialization: Cereal, RapidJSON
-  - Build: Visual Studio 2019+ (MSVC)
-  - Testing: CppUnitTestFramework
+  - Build: CMake 3.20+ (any compiler with C++17 support — MSVC, GCC, Clang)
+  - Testing: CTest
+
+## Build
+
+From the repository root:
+
+```sh
+cmake -S . -B build
+cmake --build build --config Release --parallel
+ctest --test-dir build --build-config Release --output-on-failure
+```
+
+Binaries are written to `build/bin/`. The `cphysics_testbed` executable expects
+its working directory to be `Rebuild of cphysics/Rebuild of cphysics/testbed/`
+so that `settings.bin` and `imgui.ini` resolve via the relative paths used in
+`Main.cpp`. When opening the generated VS solution, this is set automatically.
+
+GLFW is resolved via `find_package(glfw3)` if available on the system,
+otherwise CMake builds it from source via FetchContent (GLFW 3.4).
+
+Optional CMake flags:
+- `-DCPHYSICS_WARNINGS_AS_ERRORS=ON` — treat warnings as errors (used in CI).
+
 
   Project Structure
 
@@ -18,8 +40,8 @@
   ├── testbed/                   # OpenGL visualization + demos
   │   ├── Tests/                 # 15 physics demonstration scenarios
   │   └── imgui/                 # Dear ImGui integration
-  ├── dependencies/              # Third-party libraries
-  └── UnitTests/                 # Unit test suite
+  ├── dependencies/              # Third-party libraries (GLAD, ImGui, cereal)
+  └── tests/                     # Framework-free regression tests (run via ctest)
 
   Core Components
 

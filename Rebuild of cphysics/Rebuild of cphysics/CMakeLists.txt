@@ -1,3 +1,5 @@
+# ---- Engine ---------------------------------------------------------------
+
 set(CPHYSICS_ENGINE_SOURCES
     src/Arbiter.cpp
     src/Body.cpp
@@ -27,7 +29,6 @@ target_compile_options(cphysics
         $<$<CXX_COMPILER_ID:MSVC>:/W3 /permissive->
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
 )
-
 if(CPHYSICS_WARNINGS_AS_ERRORS)
     target_compile_options(cphysics
         PRIVATE
@@ -36,29 +37,64 @@ if(CPHYSICS_WARNINGS_AS_ERRORS)
     )
 endif()
 
+# ---- Window/GL system deps (resolved once, used by imgui + testbed) -------
+
 find_package(OpenGL REQUIRED)
 
-set(CPHYSICS_USE_VENDORED_GLFW_DEFAULT OFF)
-if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CPHYSICS_USE_VENDORED_GLFW_DEFAULT ON)
+find_package(glfw3 CONFIG QUIET)
+if(NOT TARGET glfw AND NOT TARGET glfw3)
+    include(FetchContent)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    FetchContent_MakeAvailable(glfw)
 endif()
 
-option(
-    CPHYSICS_USE_VENDORED_GLFW
-    "Use the vendored MSVC x64 GLFW binary for the testbed"
-    ${CPHYSICS_USE_VENDORED_GLFW_DEFAULT}
+# Normalize: some packagers expose the target as `glfw3`, FetchContent uses `glfw`.
+if(TARGET glfw)
+    set(CPHYSICS_GLFW_TARGET glfw)
+else()
+    set(CPHYSICS_GLFW_TARGET glfw3)
+endif()
+
+# ---- Vendored third-party (no -Werror, no -Wall) --------------------------
+#
+# These targets compile vendored code that we do not maintain. They are
+# intentionally excluded from the project's warning discipline so warnings
+# in upstream sources cannot break the build.
+
+add_library(cphysics_glad STATIC dependencies/GLAD/src/glad.c)
+target_include_directories(cphysics_glad
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/GLAD/include"
 )
 
-add_executable(cphysics_testbed
-    testbed/Main.cpp
-    testbed/Render.cpp
-    testbed/Test.cpp
+add_library(cphysics_imgui STATIC
     testbed/imgui/imgui.cpp
     testbed/imgui/imgui_draw.cpp
     testbed/imgui/imgui_widgets.cpp
     testbed/imgui/imgui_impl_glfw.cpp
     testbed/imgui/imgui_impl_opengl3.cpp
-    dependencies/GLAD/src/glad.c
+)
+target_include_directories(cphysics_imgui
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui"
+)
+# imgui_impl_opengl3.h auto-detects the GL loader from headers on the include
+# path; expose GLAD publicly so consumers including that header pick it up.
+target_link_libraries(cphysics_imgui PUBLIC ${CPHYSICS_GLFW_TARGET} cphysics_glad)
+
+# ---- Testbed --------------------------------------------------------------
+
+add_executable(cphysics_testbed
+    testbed/Main.cpp
+    testbed/Render.cpp
+    testbed/Test.cpp
 )
 target_compile_features(cphysics_testbed PRIVATE cxx_std_17)
 target_compile_options(cphysics_testbed
@@ -75,61 +111,23 @@ if(CPHYSICS_WARNINGS_AS_ERRORS)
 endif()
 target_include_directories(cphysics_testbed
     PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies"
-        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/GLAD/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui"
-        "${CMAKE_CURRENT_SOURCE_DIR}/testbed"
+        "${CMAKE_CURRENT_SOURCE_DIR}/dependencies"   # cereal
+        "${CMAKE_CURRENT_SOURCE_DIR}/testbed"        # Settings.h, Colour.h, Tests/...
 )
-target_link_libraries(cphysics_testbed PRIVATE cphysics OpenGL::GL)
+target_link_libraries(cphysics_testbed
+    PRIVATE
+        cphysics
+        cphysics_glad
+        cphysics_imgui
+        ${CPHYSICS_GLFW_TARGET}
+        OpenGL::GL
+)
 set_target_properties(cphysics_testbed
     PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/testbed"
 )
 
-if(CPHYSICS_USE_VENDORED_GLFW)
-    if(NOT MSVC)
-        message(FATAL_ERROR "CPHYSICS_USE_VENDORED_GLFW requires MSVC because dependencies/GLFW/lib-vc2019 contains MSVC binaries.")
-    endif()
-    if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-        message(FATAL_ERROR "CPHYSICS_USE_VENDORED_GLFW requires a 64-bit build because the vendored GLFW binary is MSVC x64 only.")
-    endif()
-
-    set(CPHYSICS_VENDORED_GLFW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/GLFW")
-    add_library(cphysics_vendored_glfw STATIC IMPORTED)
-    set_target_properties(cphysics_vendored_glfw
-        PROPERTIES
-            IMPORTED_LOCATION "${CPHYSICS_VENDORED_GLFW_DIR}/lib-vc2019/glfw3.lib"
-            INTERFACE_INCLUDE_DIRECTORIES "${CPHYSICS_VENDORED_GLFW_DIR}/include"
-    )
-    target_link_libraries(cphysics_testbed PRIVATE cphysics_vendored_glfw)
-    add_custom_command(
-        TARGET cphysics_testbed
-        POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CPHYSICS_VENDORED_GLFW_DIR}/lib-vc2019/glfw3.dll"
-            "$<TARGET_FILE_DIR:cphysics_testbed>/glfw3.dll"
-        VERBATIM
-    )
-else()
-    find_package(glfw3 CONFIG QUIET)
-    if(TARGET glfw)
-        target_link_libraries(cphysics_testbed PRIVATE glfw)
-    elseif(TARGET glfw3)
-        target_link_libraries(cphysics_testbed PRIVATE glfw3)
-    else()
-        include(FetchContent)
-        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-        FetchContent_Declare(
-            glfw
-            GIT_REPOSITORY https://github.com/glfw/glfw.git
-            GIT_TAG 3.4
-        )
-        FetchContent_MakeAvailable(glfw)
-        target_link_libraries(cphysics_testbed PRIVATE glfw)
-    endif()
-endif()
+# ---- Tests ----------------------------------------------------------------
 
 add_executable(cphysics_geometry_regression tests/GeometryRegression.cpp)
 target_compile_features(cphysics_geometry_regression PRIVATE cxx_std_17)
@@ -147,6 +145,3 @@ if(CPHYSICS_WARNINGS_AS_ERRORS)
 endif()
 target_link_libraries(cphysics_geometry_regression PRIVATE cphysics)
 add_test(NAME geometry_regression COMMAND cphysics_geometry_regression)
-
-# UnitTests uses Microsoft.VisualStudio.CppUnitTestFramework and remains covered by
-# the checked-in Visual Studio solution; it is intentionally not built by CMake.
