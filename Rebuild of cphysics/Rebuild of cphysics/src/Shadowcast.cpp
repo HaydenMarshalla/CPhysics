@@ -49,7 +49,7 @@ void ShadowCasting::projectRays(Vectors2D direction, const std::vector<Body*>& b
 {
 	Matrix2D m = Matrix2D(0.00001f);
 	mul(m.Transpose(), direction);
-	for (unsigned int i = 0; i < 3; i++) {
+	for (real i = 0.0f; i < 3.0f; i += 1.0f) {
 		Ray ray = Ray(startPoint, direction, distance);
 		ray.updateProjection(bodiesToEvaluate);
 		rayData.emplace_back(ray, std::atan2(direction.y, direction.x));

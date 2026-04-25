@@ -4,8 +4,8 @@
 
 Polygon::Polygon(const std::vector<Vectors2D>& vertLists)
 {
-	generateHull(vertLists, vertLists.size());
-	vertexCount = vertices.size();
+	generateHull(vertLists, static_cast<unsigned int>(vertLists.size()));
+	vertexCount = static_cast<unsigned int>(vertices.size());
 	assert(vertexCount > 2);
 	calcNormals();
 }

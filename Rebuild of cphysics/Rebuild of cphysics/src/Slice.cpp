@@ -238,7 +238,7 @@ Vectors2D Slice::findPolyCentre(const std::vector<Vectors2D>& obj2Vertz)
 	real centerX = 0.0f;
 	real centerY = 0.0f;
 
-	for (unsigned int i = 0, j = obj2Vertz.size() - 1; i < obj2Vertz.size(); j = i++) {
+	for (unsigned int i = 0, j = static_cast<unsigned int>(obj2Vertz.size() - 1); i < obj2Vertz.size(); j = i++) {
 		real temp = obj2Vertz[i].x * obj2Vertz[j].y - obj2Vertz[j].x * obj2Vertz[i].y;
 		accumulatedArea += temp;
 		centerX += (obj2Vertz[i].x + obj2Vertz[j].x) * temp;
