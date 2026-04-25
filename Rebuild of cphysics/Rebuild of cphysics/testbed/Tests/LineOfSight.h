@@ -22,7 +22,7 @@ public:
 		camera.zoom = 30.0f;
 	}
 
-	void step(float dt, unsigned int solver_iterations) override {
+	void step(float, unsigned int) override {
 	}
 
 	void drawInstructions() override

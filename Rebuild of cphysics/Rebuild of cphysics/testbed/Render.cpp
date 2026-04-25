@@ -352,8 +352,8 @@ void Render::drawCircle(const Vectors2D& center, real radius, const Colour& colo
 {
 	const real k_segments = 32.0f;
 	const real k_increment = 2.0f * PI / k_segments;
-	real sinInc = std::sinf(k_increment);
-	real cosInc = std::cosf(k_increment);
+	real sinInc = std::sin(k_increment);
+	real cosInc = std::cos(k_increment);
 	Vectors2D r1(1.0f, 0.0f);
 	Vectors2D v1 = center + radius * r1;
 	for (unsigned int i = 0; i < k_segments; ++i)
@@ -373,8 +373,8 @@ void Render::drawSolidCircle(const Vectors2D& center, real radius, const Vectors
 {
 	const real k_segments = 32.0f;
 	const real k_increment = 2.0f * PI / k_segments;
-	real sinInc = std::sinf(k_increment);
-	real cosInc = std::cosf(k_increment);
+	real sinInc = std::sin(k_increment);
+	real cosInc = std::cos(k_increment);
 	Vectors2D v0 = center;
 	Vectors2D r1(cosInc, sinInc);
 	Vectors2D v1 = center + radius * r1;

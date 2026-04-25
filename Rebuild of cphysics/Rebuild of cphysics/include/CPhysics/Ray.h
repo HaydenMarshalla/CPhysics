@@ -40,6 +40,7 @@ class Ray {
 public:
 	Ray() {}
 	Ray(const Ray& ray) : intersectingBodiesInfo(ray.getRayInformation()), startPoint(ray.getStartPoint()), distance(ray.getDistance()), direction(ray.getDirection()) {}
+	Ray& operator=(const Ray& ray) = default;
 
 	Ray(const Vectors2D& startPoint, const Vectors2D& direction, real distance) {
 		init(startPoint, direction.normalizeVec(), distance);

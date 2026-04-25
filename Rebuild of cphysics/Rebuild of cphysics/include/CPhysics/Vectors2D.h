@@ -32,6 +32,7 @@ struct Vectors2D
 
 	// Copy constructor using two floats to initialise x and y.
 	Vectors2D(const Vectors2D& v) : x(v.x), y(v.y) {}
+	Vectors2D& operator=(const Vectors2D& v) = default;
 
 	// Sets this vector to a given set of x and y values.
 	void set(real xIn, real yIn) { x = xIn; y = yIn; }

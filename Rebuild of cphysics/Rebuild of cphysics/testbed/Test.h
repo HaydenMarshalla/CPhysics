@@ -12,7 +12,7 @@ class Test
 {
 public:
 	Test();
-	~Test();
+	virtual ~Test();
 
 	virtual void resetCamera() = 0;
 	void generateRandomPolygon(const Vectors2D& location, const real minRadius, const real maxRadius);

@@ -10,4 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 enable_testing()
 
+option(CPHYSICS_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+
 add_subdirectory("Rebuild of cphysics/Rebuild of cphysics")

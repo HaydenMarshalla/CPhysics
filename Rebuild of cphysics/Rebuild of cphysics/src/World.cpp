@@ -44,7 +44,7 @@ void World::collisionCheck()
 			Body* B = bodies[b];
 
 			//Ignored overlapping static objects
-			if (A->invMass == 0.0f && B->invMass == 0.0f || A->particle && B->particle) {
+			if ((A->invMass == 0.0f && B->invMass == 0.0f) || (A->particle && B->particle)) {
 				continue;
 			}
 
@@ -178,7 +178,7 @@ void World::gravityBetweenObj()
 		for (unsigned int b = a + 1; b < bodies.size(); b++) {
 			Body* B = bodies[b];
 			real dist = distance(A->position, B->position);
-			real force = std::powf(6.67f, -11.0f) * A->mass * B->mass / (dist * dist);
+			real force = std::pow(6.67f, -11.0f) * A->mass * B->mass / (dist * dist);
 			Vectors2D direction = Vectors2D(B->position.x - A->position.x, B->position.y - A->position.y);
 			direction *= force;
 			Vectors2D oppositeDir = Vectors2D(-direction.x, -direction.y);

@@ -98,6 +98,7 @@ static void glfwErrorCallback(int error, const char* description)
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	(void)window;
 	camera.window_width = width;
 	camera.window_height = height;
 	glViewport(0, 0, width, height);

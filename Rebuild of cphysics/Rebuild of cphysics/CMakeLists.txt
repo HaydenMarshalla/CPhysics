@@ -28,6 +28,14 @@ target_compile_options(cphysics
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
 )
 
+if(CPHYSICS_WARNINGS_AS_ERRORS)
+    target_compile_options(cphysics
+        PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/WX>
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+    )
+endif()
+
 find_package(OpenGL REQUIRED)
 
 set(CPHYSICS_USE_VENDORED_GLFW_DEFAULT OFF)
@@ -53,6 +61,18 @@ add_executable(cphysics_testbed
     dependencies/GLAD/src/glad.c
 )
 target_compile_features(cphysics_testbed PRIVATE cxx_std_17)
+target_compile_options(cphysics_testbed
+    PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/W3 /permissive->
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
+)
+if(CPHYSICS_WARNINGS_AS_ERRORS)
+    target_compile_options(cphysics_testbed
+        PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/WX>
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+    )
+endif()
 target_include_directories(cphysics_testbed
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/dependencies"
@@ -113,6 +133,18 @@ endif()
 
 add_executable(cphysics_geometry_regression tests/GeometryRegression.cpp)
 target_compile_features(cphysics_geometry_regression PRIVATE cxx_std_17)
+target_compile_options(cphysics_geometry_regression
+    PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/W3 /permissive->
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
+)
+if(CPHYSICS_WARNINGS_AS_ERRORS)
+    target_compile_options(cphysics_geometry_regression
+        PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/WX>
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+    )
+endif()
 target_link_libraries(cphysics_geometry_regression PRIVATE cphysics)
 add_test(NAME geometry_regression COMMAND cphysics_geometry_regression)
 

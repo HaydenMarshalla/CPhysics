@@ -4,6 +4,7 @@
 
 ParticleExplosion::ParticleExplosion(const Vectors2D& epicentre, unsigned noOfParticles, real life, World* world)
 {
+	(void)life;
 	this->epicentre = epicentre;
 	this->noOfParticles = noOfParticles;
 	this->world = world;
