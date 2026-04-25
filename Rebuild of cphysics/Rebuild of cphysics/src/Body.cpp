@@ -28,6 +28,14 @@ Body::Body(Shape* shapeIn, real x, real y)
 	setOrientation(0.0f);
 }
 
+Body::~Body()
+{
+	delete shape;
+	shape = nullptr;
+	delete aabb;
+	aabb = nullptr;
+}
+
 void Body::setOrientation(real radians)
 {
 	orientation = radians;

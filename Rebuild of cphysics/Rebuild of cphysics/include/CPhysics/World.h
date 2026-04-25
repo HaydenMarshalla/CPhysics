@@ -40,6 +40,4 @@ private:
 	std::vector<Body*> bodies;
 	std::vector<Arbiter> contacts;
 	std::vector<Joint*> joints;
-	unsigned int bodyCount;
-	unsigned int jointCount;
 };

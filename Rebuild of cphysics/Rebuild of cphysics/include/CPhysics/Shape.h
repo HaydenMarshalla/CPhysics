@@ -7,6 +7,7 @@ class Shape
 {
 public:
 	Shape() {}
+	virtual ~Shape() {}
 
 	enum Type {
 		eCircle,

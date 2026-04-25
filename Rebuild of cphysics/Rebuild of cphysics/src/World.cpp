@@ -109,74 +109,60 @@ void World::step(real dt, unsigned int iterations)
 
 void World::addBody(Body* b)
 {
-	bodyCount++;
 	bodies.push_back(b);
 }
 
 void World::removeBody(Body* body)
 {
-	if (bodyCount > 0) {
-		for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
-			if (body == *it) {
-				delete* it;
-				bodyCount--;
-				*it = nullptr;
-				it = bodies.erase(it);
-				return;
-			}
+	for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
+		if (body == *it) {
+			delete* it;
+			*it = nullptr;
+			bodies.erase(it);
+			return;
 		}
 	}
 }
 
 void World::removeAllBodies()
 {
-	if (bodyCount > 0) {
-		for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
-			delete* it;
-			*it = nullptr;
-		}
-		bodyCount = 0;
+	for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
+		delete* it;
+		*it = nullptr;
 	}
+	bodies.clear();
 }
 
 void World::addJoint(Joint* joint)
 {
-	jointCount++;
 	joints.push_back(joint);
 }
 
 void World::removeJoint(Joint* joint)
 {
-	if (jointCount > 0) {
-		for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
-			if (joint == *it) {
-				delete* it;
-				jointCount--;
-				*it = nullptr;
-				it = joints.erase(it);
-				return;
-			}
+	for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
+		if (joint == *it) {
+			delete* it;
+			*it = nullptr;
+			joints.erase(it);
+			return;
 		}
 	}
 }
 
 void World::removeAllJoints()
 {
-	if (jointCount > 0) {
-		for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
-			delete* it;
-			*it = nullptr;
-		}
-		jointCount = 0;
+	for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
+		delete* it;
+		*it = nullptr;
 	}
+	joints.clear();
 }
 
 void World::clearAll()
 {
 	removeAllBodies();
 	removeAllJoints();
-	joints.clear();
-	bodies.clear();
 	contacts.clear();
 }
 

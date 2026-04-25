@@ -10,6 +10,7 @@ public:
 	Body(){}
 	// Base constructor for all bodies - use this over the default.
 	Body(Shape* shapeIn, real x, real y);
+	~Body();
 
 	// Changes the orientation of this body and the shape associated with it.
 	void setOrientation(real radians);
