@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{58B5E944-32FE-42F7-B065-549B9D6DE014}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="testbed\Main.cpp">
@@ -108,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CPhysics\Circle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CPhysics\Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CPhysics\Polygon.h">
@@ -212,5 +218,10 @@
     <ClInclude Include="include\CPhysics\Slice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests\GeometryRegression.cpp">
+      <Filter>Tests</Filter>
+    </None>
   </ItemGroup>
 </Project>

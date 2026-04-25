@@ -1,7 +1,37 @@
 #include "CPhysics/Slice.h"
 
 #include "CPhysics/Circle.h"
+#include "CPhysics/Geometry.h"
 #include "CPhysics/Polygon.h"
+
+#include <algorithm>
+
+namespace {
+struct SliceCandidate {
+	RayInformation info;
+	real rayFraction = 0.0f;
+};
+
+void addCircleIntersection(
+	std::vector<SliceCandidate>& candidates,
+	Body* body,
+	const Vectors2D& startPoint,
+	const Vectors2D& rayDelta,
+	real rayFraction)
+{
+	if (rayFraction < -EPSILON || rayFraction > 1.0f + EPSILON) {
+		return;
+	}
+
+	const Vectors2D point = startPoint + rayDelta * rayFraction;
+	candidates.push_back({ RayInformation(body, point.x, point.y, -1), rayFraction });
+}
+
+bool isSameIntersection(const SliceCandidate& a, const SliceCandidate& b)
+{
+	return distance(a.info.getCoord(), b.info.getCoord()) <= EPSILON;
+}
+}
 
 Slice::Slice(const Vectors2D& startPoint, const Vectors2D& direction, real distance)
 {
@@ -12,15 +42,15 @@ Slice::Slice(const Vectors2D& startPoint, const Vectors2D& direction, real dista
 
 void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 	intersectingBodiesInfo.clear();
-	Vectors2D endPoint = direction * distance;
-	real end_x = endPoint.x;
-	real end_y = endPoint.y;
+	const Vectors2D rayDirection = direction.normalizeVec();
+	const Vectors2D rayDelta = rayDirection * distance;
 
-	real min_t1 = std::numeric_limits<float>::infinity();
-	real min_px = 0.0f, min_py = 0.0f;
-	unsigned int noOfIntersections = 0;
+	if (distance <= EPSILON) {
+		return;
+	}
 
 	for (Body* B : bodiesToEvaluate) {
+		std::vector<SliceCandidate> bodyIntersections;
 		if (B->shape->getType() == Polygon::ePolygon) {
 			Polygon* poly = (Polygon*)B->shape;
 			for (unsigned int i = 0; i < poly->getVertexCount(); i++) {
@@ -28,29 +58,13 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 				Vectors2D endOfPolyEdge = poly->getVertices()[i + 1 == poly->getVertexCount() ? 0 : i + 1];
 				startOfPolyEdge = (poly->rotation * startOfPolyEdge) + B->position;
 				endOfPolyEdge = (poly->rotation * endOfPolyEdge) + B->position;
-				real dx = endOfPolyEdge.x - startOfPolyEdge.x;
-				real dy = endOfPolyEdge.y - startOfPolyEdge.y;
 
-				//Check to see if the lines are not parallel
-				if ((dx - end_x) != 0.0f && (dy - end_y) != 0.0f) {
-					real t2 = (end_x * (startOfPolyEdge.y - startPoint.y) + (end_y * (startPoint.x - startOfPolyEdge.x))) / (dx * end_y - dy * end_x);
-					real t1 = (startOfPolyEdge.x + dx * t2 - startPoint.x) / end_x;
-
-					if (t1 > 0.0f && t2 >= 0.0f && t2 <= 1.0f) {
-						Vectors2D point = Vectors2D(startPoint.x + end_x * t1, startPoint.y + end_y * t1);
-						real dist = (point - startPoint).len();
-						if (t1 < min_t1 && dist < distance) {
-							Vectors2D point = Vectors2D(startPoint.x + end_x * t1, startPoint.y + end_y * t1);
-							Vectors2D pToS = point - startPoint;
-							real dist = pToS.len();
-							if (dist < distance) {
-								min_px = point.x;
-								min_py = point.y;
-								intersectingBodiesInfo.push_back(RayInformation(B, min_px, min_py, i));
-								noOfIntersections++;
-							}
-						}
-					}
+				SegmentIntersection intersection;
+				if (intersectRaySegment(startPoint, rayDirection, distance, startOfPolyEdge, endOfPolyEdge, intersection)) {
+					bodyIntersections.push_back({
+						RayInformation(B, intersection.point.x, intersection.point.y, static_cast<int>(i)),
+						intersection.rayFraction
+					});
 				}
 			}
 		}
@@ -60,8 +74,11 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 			real r = circle->getRadius();
 			Vectors2D difInCenters = startPoint - circleCenter;
 
-			real a = dotProduct(endPoint, endPoint);
-			real b = 2.0f * dotProduct(difInCenters, endPoint);
+			real a = dotProduct(rayDelta, rayDelta);
+			if (a <= EPSILON) {
+				continue;
+			}
+			real b = 2.0f * dotProduct(difInCenters, rayDelta);
 			real c = dotProduct(difInCenters, difInCenters) - r * r;
 
 			real discriminant = b * b - 4.0f * a * c;
@@ -69,29 +86,34 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 				discriminant = std::sqrt(discriminant);
 
 				real t1 = (-b - discriminant) / (2.0f * a);
-				if (t1 >= 0.0f && t1 <= 1.0f + EPSILON) {
-					min_px = startPoint.x + end_x * t1;
-					min_py = startPoint.y + end_y * t1;
-					intersectingBodiesInfo.emplace_back(B, min_px, min_py, -1);
-				}
-
 				real t2 = (-b + discriminant) / (2.0f * a);
-				if (t2 >= 0.0f && t2 <= 1.0f + EPSILON) {
-					min_px = startPoint.x + end_x * t2;
-					min_py = startPoint.y + end_y * t2;
-					intersectingBodiesInfo.emplace_back(B, min_px, min_py, -1);
+				addCircleIntersection(bodyIntersections, B, startPoint, rayDelta, t1);
+				if (std::fabs(t2 - t1) > EPSILON) {
+					addCircleIntersection(bodyIntersections, B, startPoint, rayDelta, t2);
 				}
 			}
 		}
-		if (noOfIntersections % 2 == 1) {
-			intersectingBodiesInfo.erase(intersectingBodiesInfo.begin() + (intersectingBodiesInfo.size() - 1));
-			noOfIntersections = 0;
+
+		if (!bodyIntersections.empty()) {
+			std::sort(bodyIntersections.begin(), bodyIntersections.end(), [](const SliceCandidate& a, const SliceCandidate& b) {
+				return a.rayFraction < b.rayFraction;
+			});
+
+			bodyIntersections.erase(
+				std::unique(bodyIntersections.begin(), bodyIntersections.end(), isSameIntersection),
+				bodyIntersections.end());
+		}
+
+		if (!bodyIntersections.empty() && bodyIntersections.size() % 2 == 0) {
+			for (const SliceCandidate& intersection : bodyIntersections) {
+				intersectingBodiesInfo.push_back(intersection.info);
+			}
 		}
 	}
 }
 
 void Slice::sliceObjects(World& world) {
-	for (unsigned int i = 0; i < intersectingBodiesInfo.size(); i += 2) {
+	for (unsigned int i = 0; i + 1 < intersectingBodiesInfo.size(); i += 2) {
 		Body* b = intersectingBodiesInfo[i].getB();
 		bool isStatic = b->mass == 0.0f;
 		if (b->shape->getType() == Polygon::ePolygon) {
@@ -143,11 +165,11 @@ void Slice::sliceObjects(World& world) {
 				b2->setDensity(0.0f);
 			b2->restitution = b->restitution;
 			world.addBody(b2);
+			world.removeBody(b);
 		}
 		else if (b->shape->getType() == Shape::eCircle) {
 
 		}
-		world.removeBody(b);
 	}
 	intersectingBodiesInfo.clear();
 }
@@ -156,7 +178,9 @@ void Slice::setDirection(const Vectors2D& sliceVector)
 {
 	direction = sliceVector - startPoint;
 	distance = direction.len();
-	direction.Normalize();
+	if (distance > EPSILON) {
+		direction.Normalize();
+	}
 }
 
 Vectors2D Slice::findPolyCentre(const std::vector<Vectors2D>& obj2Vertz)

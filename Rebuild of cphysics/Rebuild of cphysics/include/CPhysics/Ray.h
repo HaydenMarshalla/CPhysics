@@ -16,7 +16,7 @@ public:
 		return polyIndex;
 	}
 
-	RayInformation(Body* b, real x, real y, unsigned int index) {
+	RayInformation(Body* b, real x, real y, int index) {
 		this->b = b;
 		coord = Vectors2D(x, y);
 		polyIndex = index;
@@ -33,7 +33,7 @@ public:
 private:
 	Body* b = nullptr;
 	Vectors2D coord;
-	int polyIndex;
+	int polyIndex = -1;
 };
 
 class Ray {

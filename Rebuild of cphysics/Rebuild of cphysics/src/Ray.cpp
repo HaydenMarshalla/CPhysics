@@ -1,24 +1,28 @@
 #include "CPhysics/Ray.h"
 
 #include "CPhysics/Circle.h"
+#include "CPhysics/Geometry.h"
 #include "CPhysics/Polygon.h"
 
 void Ray::changeDirection(const Vectors2D& newDirection)
 {
-	direction = newDirection;
+	direction = newDirection.normalizeVec();
 }
 
 void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 {
 	intersectingBodiesInfo = RayInformation();
-	Vectors2D endPoint = direction * static_cast<float>(distance);
-	real end_x = endPoint.x;
-	real end_y = endPoint.y;
+	const Vectors2D rayDirection = direction.normalizeVec();
+	const Vectors2D rayDelta = rayDirection * distance;
 
 	real min_t1 = std::numeric_limits<float>::infinity();
 	real min_px = 0.0f, min_py = 0.0f;
 	bool intersectionFound = false;
 	Body* closestBody = nullptr;
+
+	if (distance <= EPSILON) {
+		return;
+	}
 
 	for (Body* B : bodiesToEvaluate) {
 		if (B->shape->getType() == Polygon::ePolygon) {
@@ -28,24 +32,15 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 				Vectors2D endOfPolyEdge = poly->getVertices()[i + 1 == poly->getVertexCount() ? 0 : i + 1];
 				startOfPolyEdge = (poly->rotation * startOfPolyEdge) + B->position;
 				endOfPolyEdge = (poly->rotation * endOfPolyEdge) + B->position;
-				real dx = endOfPolyEdge.x - startOfPolyEdge.x;
-				real dy = endOfPolyEdge.y - startOfPolyEdge.y;
 
-				//Check to see if the lines are not parallel
-				if ((dx - end_x) != 0.0f && (dy - end_y) != 0.0f) {
-					real t2 = (end_x * (startOfPolyEdge.y - startPoint.y) + (end_y * (startPoint.x - startOfPolyEdge.x))) / (dx * end_y - dy * end_x);
-					real t1 = (startOfPolyEdge.x + dx * t2 - startPoint.x) / end_x;
-
-					if (t1 > 0.0f && t2 >= 0.0f && t2 <= 1.0f) {
-						Vectors2D point = Vectors2D(startPoint.x + end_x * t1, startPoint.y + end_y * t1);
-						real dist = (point - startPoint).len();
-						if (t1 < min_t1 && dist < distance) {
-							min_t1 = t1;
-							min_px = point.x;
-							min_py = point.y;
-							intersectionFound = true;
-							closestBody = B;
-						}
+				SegmentIntersection intersection;
+				if (intersectRaySegment(startPoint, rayDirection, distance, startOfPolyEdge, endOfPolyEdge, intersection)) {
+					if (intersection.rayFraction < min_t1) {
+						min_t1 = intersection.rayFraction;
+						min_px = intersection.point.x;
+						min_py = intersection.point.y;
+						intersectionFound = true;
+						closestBody = B;
 					}
 				}
 			}
@@ -56,8 +51,11 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 			real r = circle->getRadius();
 			Vectors2D difInCenters = startPoint - circleCenter;
 
-			real a = dotProduct(endPoint, endPoint);
-			real b = 2.0f * dotProduct(difInCenters, endPoint);
+			real a = dotProduct(rayDelta, rayDelta);
+			if (a <= EPSILON) {
+				continue;
+			}
+			real b = 2.0f * dotProduct(difInCenters, rayDelta);
 			real c = dotProduct(difInCenters, difInCenters) - r * r;
 
 			real discriminant = b * b - 4.0f * a * c;
@@ -65,14 +63,16 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 				discriminant = std::sqrt(discriminant);
 
 				real t1 = (-b - discriminant) / (2.0f * a);
-				if (t1 >= 0.0f && t1 <= 1.0f + EPSILON) {
-					if (t1 < min_t1) {
-						min_t1 = t1;
-						min_px = startPoint.x + end_x * t1;
-						min_py = startPoint.y + end_y * t1;
-						intersectionFound = true;
-						closestBody = B;
-					}
+				real t2 = (-b + discriminant) / (2.0f * a);
+				if ((t1 < -EPSILON || t1 > 1.0f + EPSILON) || (t2 >= -EPSILON && t2 < t1)) {
+					t1 = t2;
+				}
+				if (t1 >= -EPSILON && t1 <= 1.0f + EPSILON && t1 < min_t1) {
+					min_t1 = t1;
+					min_px = startPoint.x + rayDelta.x * t1;
+					min_py = startPoint.y + rayDelta.y * t1;
+					intersectionFound = true;
+					closestBody = B;
 				}
 			}
 		}

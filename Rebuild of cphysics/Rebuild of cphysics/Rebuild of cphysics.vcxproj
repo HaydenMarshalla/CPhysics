@@ -50,6 +50,7 @@
     <ClInclude Include="include\CPhysics\Body.h" />
     <ClInclude Include="include\CPhysics\Circle.h" />
     <ClInclude Include="include\CPhysics\CPhysics.h" />
+    <ClInclude Include="include\CPhysics\Geometry.h" />
     <ClInclude Include="include\CPhysics\Joint.h" />
     <ClInclude Include="include\CPhysics\JointToBody.h" />
     <ClInclude Include="include\CPhysics\JointToPoint.h" />
@@ -86,6 +87,9 @@
     <ClInclude Include="testbed\Tests\StackedObjects.h" />
     <ClInclude Include="testbed\Tests\Trebuchet.h" />
     <ClInclude Include="testbed\Tests\Wreckingball.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests\GeometryRegression.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
