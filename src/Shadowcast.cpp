@@ -7,7 +7,20 @@
 #include <stdexcept>
 
 namespace {
-static const real POLYGON_CORNER_ANGLE_OFFSET = 0.00001f;
+static const real POLYGON_CORNER_ANGLE_OFFSET = 0.001f;
+
+bool isPointInsidePolygon(const Body& body, const Polygon& polygon, const Vectors2D& point)
+{
+	for (unsigned int i = 0; i < polygon.getVertexCount(); i++) {
+		const Vectors2D localVertex = polygon.rotation * polygon.getVertices()[i];
+		const Vectors2D localNormal = polygon.rotation * polygon.getNormals()[i];
+		const Vectors2D pointToVertex = point - (body.position + localVertex);
+		if (dotProduct(pointToVertex, localNormal) > 0.0f) {
+			return false;
+		}
+	}
+	return true;
+}
 }
 
 ShadowCasting::ShadowCasting(const Vectors2D& startPoint, real distance)
@@ -33,6 +46,10 @@ void ShadowCasting::updateProjections(const std::vector<Body*>& bodiesToEvaluate
 	for (const Body* B : bodiesToEvaluate) {
 		if (B->shape->getType() == Shape::ePolygon) {
 			Polygon* poly1 = static_cast<Polygon*>(B->shape.get());
+			if (isPointInsidePolygon(*B, *poly1, startPoint)) {
+				rayData.clear();
+				break;
+			}
 			for (const Vectors2D& v : poly1->getVertices()) {
 				Vectors2D direction = poly1->rotation * v + B->position - startPoint;
 				projectRays(direction, bodiesToEvaluate);

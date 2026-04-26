@@ -86,6 +86,19 @@ void Test::step(real dt, unsigned int solver_iterations)
 
 void Test::render()
 {
+	for (ShadowCasting& p : shadowcasts) {
+		p.updateProjections(world.getBodies());
+		std::vector<RayAngleInformation> raydata = p.getRaydata();
+		for (unsigned int i = 0; i < raydata.size(); i++) {
+			Ray ray1 = raydata[i].getRAY();
+			if (ray1.getRayInformation().getB() == nullptr) continue;
+
+			Ray ray2 = raydata[i + 1 == raydata.size() ? 0 : i + 1].getRAY();
+			if (ray2.getRayInformation().getB() == nullptr) continue;
+			debugDraw.drawShadowPolygon(ray1, ray2, raydata[i].getRAY().getStartPoint(), settings.shadow);
+		}
+		debugDraw.flush();
+	}
 	if (settings.drawShapes) {
 		for (Body* b : world.getBodies()) {
 			switch (b->shape->getType()) {
@@ -131,18 +144,6 @@ void Test::render()
 	for (Rayscatter& r : rayscatters)
 	{
 		debugDraw.drawRayscatter(r, settings.rayToBody);
-	}
-	for (ShadowCasting& p : shadowcasts) {
-		p.updateProjections(world.getBodies());
-		std::vector<RayAngleInformation> raydata = p.getRaydata();
-		for (unsigned int i = 0; i < raydata.size(); i++) {
-			Ray ray1 = raydata[i].getRAY();
-			if (ray1.getRayInformation().getB() == nullptr) continue;
-
-			Ray ray2 = raydata[i + 1 == raydata.size() ? 0 : i + 1].getRAY();
-			if (ray2.getRayInformation().getB() == nullptr) continue;
-			debugDraw.drawShadowPolygon(ray1, ray2, raydata[i].getRAY().getStartPoint(), settings.shadow);
-		}
 	}
 	for (ProximityExplosion& p : proximityExplosions)
 		p.update(world.getBodies());
