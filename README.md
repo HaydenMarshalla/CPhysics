@@ -36,13 +36,13 @@ Build outputs are written to `build/bin/`.
 
 ## Run The Testbed
 
-The testbed expects its working directory to be `Rebuild of cphysics/Rebuild of cphysics/testbed` because settings are still loaded from a relative path.
+The testbed stores `settings.bin` in its working directory. The CMake Visual Studio debugger setting uses `testbed/` automatically.
 
 From PowerShell:
 
 ```powershell
-cd "Rebuild of cphysics\Rebuild of cphysics\testbed"
-..\..\..\build\bin\cphysics_testbed.exe
+cd testbed
+..\build\bin\cphysics_testbed.exe
 ```
 
 To run only the regression executable directly:
@@ -54,16 +54,15 @@ To run only the regression executable directly:
 ## Project Layout
 
 ```text
-Rebuild of cphysics/Rebuild of cphysics/
-  include/CPhysics/        Core engine headers
-  src/                     Core engine implementation
-  testbed/                 OpenGL visualization, ImGui UI, and demos
-  testbed/Tests/           Interactive physics scenarios
-  dependencies/            Vendored GLAD, ImGui, and cereal headers/sources
-  tests/                   Framework-free regression tests
+include/CPhysics/        Core engine headers
+src/                     Core engine implementation
+testbed/                 OpenGL visualization, ImGui UI, and demos
+testbed/Tests/           Interactive physics scenarios
+tests/                   Framework-free regression tests
+third_party/             Vendored GLAD, ImGui, and cereal headers/sources
 ```
 
-Top-level CMake adds the nested engine directory and produces:
+Top-level CMake produces:
 
 - `cphysics` static library
 - `cphysics_testbed` interactive demo application
@@ -89,7 +88,6 @@ The engine has been hardened in several important areas:
 - Joints still apply spring tension as impulses without timestep scaling, so joint behavior remains frame-rate dependent.
 - Many engine fields are public and mutable, so callers can still bypass invariants after construction.
 - The settings file path is still relative to the testbed working directory.
-- The repository currently preserves the original nested `Rebuild of cphysics/Rebuild of cphysics` layout.
 
 ## Dependencies
 
