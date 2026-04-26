@@ -30,9 +30,7 @@ public:
 
 	void projectRays(Vectors2D direction, const std::vector<Body*>& bodiesToEvaluate);
 
-	void setStartPoint(const Vectors2D& startPoint) {
-		this->startPoint = startPoint;
-	}
+	void setStartPoint(const Vectors2D& startPoint);
 
 	std::vector<RayAngleInformation> const& getRaydata() { return rayData; }
 

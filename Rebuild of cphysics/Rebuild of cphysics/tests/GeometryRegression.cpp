@@ -6,6 +6,7 @@
 #include "CPhysics/ProximityExplosion.h"
 #include "CPhysics/Ray.h"
 #include "CPhysics/Rayscatter.h"
+#include "CPhysics/Shadowcast.h"
 #include "CPhysics/Slice.h"
 #include "CPhysics/World.h"
 
@@ -212,6 +213,47 @@ void broadphaseFindsContactsInSeparateCells()
 
 	REQUIRE(world.getContactsVector().size() == 2);
 }
+
+void shadowcastSkipsDegenerateVertexRay()
+{
+	World world;
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
+
+	ShadowCasting shadow(Vectors2D(-1.0f, -1.0f), 10.0f);
+	shadow.updateProjections(world.getBodies());
+}
+
+void shadowcastInsidePolygonProducesNoVisibilityFan()
+{
+	World world;
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
+
+	ShadowCasting shadow(Vectors2D(0.0f, 0.0f), 10.0f);
+	shadow.updateProjections(world.getBodies());
+
+	REQUIRE(shadow.getRaydata().empty());
+}
+
+void shadowcastPolygonCornerRaysReachOcclusionBoundary()
+{
+	World world;
+	Body* blocker = world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
+	Body* boundary = world.createBody<Polygon>(10.0f, 0.0f, 0.1f, 100.0f);
+
+	ShadowCasting shadow(Vectors2D(-1000.0f, 0.0f), 2000.0f);
+	shadow.updateProjections(world.getBodies());
+
+	bool foundBoundaryProjection = false;
+	for (const RayAngleInformation& rayData : shadow.getRaydata()) {
+		const Body* hitBody = rayData.getRAY().getRayInformation().getB();
+		REQUIRE(hitBody == blocker || hitBody == boundary || hitBody == nullptr);
+		if (hitBody == boundary) {
+			foundBoundaryProjection = true;
+		}
+	}
+
+	REQUIRE(foundBoundaryProjection);
+}
 }
 
 int main()
@@ -228,5 +270,8 @@ int main()
 	invalidShapesAreRejected();
 	invalidRaysAndExplosionsAreRejected();
 	broadphaseFindsContactsInSeparateCells();
+	shadowcastSkipsDegenerateVertexRay();
+	shadowcastInsidePolygonProducesNoVisibilityFan();
+	shadowcastPolygonCornerRaysReachOcclusionBoundary();
 	return 0;
 }
