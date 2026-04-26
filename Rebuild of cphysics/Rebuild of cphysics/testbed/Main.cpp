@@ -577,6 +577,7 @@ void step()
 	else { currentTest->step(dt, settings.solverIterations); }
 
 	currentTest->render();
+	debugDraw.flush();
 }
 
 int main()

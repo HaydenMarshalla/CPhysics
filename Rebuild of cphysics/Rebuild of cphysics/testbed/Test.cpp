@@ -109,9 +109,6 @@ void Test::render()
 			}
 								break;
 			}
-			// THIS SHOULD NOT BE HERE BUT THERE IS A BUG WITH THE FLUSHING
-			// OBJECTS BECOME OVERLAPPED/INVISIBLE. SHOULD BE DEALT WITH WHEN BUFFER IS FULL.
-			debugDraw.flush();
 		}
 	}
 
