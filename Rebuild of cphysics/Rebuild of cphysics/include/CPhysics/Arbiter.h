@@ -9,7 +9,7 @@ public:
 	Arbiter(Body* a, Body* b);
 
 	void narrowPhase();
-	void solve();
+	void solve(real dt, real penetrationAllowance, real baumgarteBeta);
 	void penetrationResolution(real allowance, real correction);
 	
 	const unsigned int& getContactCount() const { return contactCount; }

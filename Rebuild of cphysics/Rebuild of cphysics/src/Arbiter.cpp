@@ -3,6 +3,7 @@
 #include "CPhysics/Polygon.h"
 
 #include <algorithm>
+#include <cmath>
 
 static const real BIAS_RELATIVE = 0.95f;
 static const real BIAS_ABSOLUTE = 0.01f;
@@ -389,7 +390,7 @@ void Arbiter::polygonVsPolygon()
 }
 
 
-void Arbiter::solve()
+void Arbiter::solve(real dt, real penetrationAllowance, real baumgarteBeta)
 {
 	Vectors2D contactA = contacts[0] - A->position;
 	Vectors2D contactB = contacts[0] - B->position;
@@ -400,17 +401,26 @@ void Arbiter::solve()
 	//Positive = converging Negative = diverging
 	real contactVel = dotProduct(relativeVel, normal);
 
-	//Prevents objects colliding when they are moving away from each other.
-	//If not, objects could still be overlapping after a contact has been resolved and cause objects to stick together
-	if (contactVel >= 0.0f) {
-		return;
-	}
-
 	real acn = crossProduct(contactA, normal);
 	real bcn = crossProduct(contactB, normal);
 	real inverseMassSum = A->invMass + B->invMass + (acn * acn) * A->invI + (bcn * bcn) * B->invI;
+	if (inverseMassSum <= EPSILON) {
+		return;
+	}
 
-	real j = -(e + 1.0f) * contactVel;
+	real bias = 0.0f;
+	if (dt > EPSILON) {
+		const real beta = std::clamp(baumgarteBeta, 0.0f, 0.2f);
+		const real positionError = std::max(penetration - penetrationAllowance, 0.0f);
+		bias = beta * positionError / dt;
+	}
+
+	// Avoid injecting more impulse once the contact is already separating fast enough.
+	if (contactVel >= bias) {
+		return;
+	}
+
+	real j = (-(e + 1.0f) * contactVel) + bias;
 	j /= inverseMassSum;
 
 	Vectors2D impulse = normal * j;

@@ -5,7 +5,6 @@
 #include "CPhysics/Polygon.h"
 
 #include <cmath>
-#include <limits>
 #include <stdexcept>
 
 void Ray::changeDirection(const Vectors2D& newDirection)

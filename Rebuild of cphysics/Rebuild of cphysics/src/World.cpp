@@ -12,6 +12,7 @@
 
 static const real DEFAULT_PENETRATION_ALLOWANCE = 0.01f;
 static const real DEFAULT_PENETRATION_CORRECTION = 0.1f;
+static const real DEFAULT_BAUMGARTE_BETA = 0.1f;
 static const real BROADPHASE_CELL_SIZE = 50.0f;
 
 namespace {
@@ -149,7 +150,7 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 	//Apply impulses
 	for (unsigned int i = 0; i < iterations; i++) {
 		for (Arbiter contact : contacts) {
-			contact.solve();
+			contact.solve(dt, penetrationAllowance, DEFAULT_BAUMGARTE_BETA);
 		}
 	}
 

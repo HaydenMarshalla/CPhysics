@@ -214,6 +214,22 @@ void broadphaseFindsContactsInSeparateCells()
 	REQUIRE(world.getContactsVector().size() == 2);
 }
 
+void baumgarteBiasReducesOverlappingContactDrift()
+{
+	World world;
+	Body* left = world.createBody<Circle>(0.0f, 0.0f, 1.0f);
+	Body* right = world.createBody<Circle>(1.5f, 0.0f, 1.0f);
+	left->affectedByGravity = false;
+	right->affectedByGravity = false;
+
+	const real initialDistance = distance(left->position, right->position);
+	for (unsigned int i = 0; i < 10; i++) {
+		world.step(1.0f / 60.0f, 10, 0.01f, 0.0f);
+	}
+
+	REQUIRE(distance(left->position, right->position) > initialDistance);
+}
+
 void shadowcastSkipsDegenerateVertexRay()
 {
 	World world;
@@ -270,6 +286,7 @@ int main()
 	invalidShapesAreRejected();
 	invalidRaysAndExplosionsAreRejected();
 	broadphaseFindsContactsInSeparateCells();
+	baumgarteBiasReducesOverlappingContactDrift();
 	shadowcastSkipsDegenerateVertexRay();
 	shadowcastInsidePolygonProducesNoVisibilityFan();
 	shadowcastPolygonCornerRaysReachOcclusionBoundary();
