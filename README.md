@@ -1,111 +1,106 @@
- This is a 2D rigid body physics engine written in C++ for game development, featuring collision detection, constraint solving, and advanced capabilities like
-  explosions and object slicing.
+# CPhysics
 
-  Tech Stack
+CPhysics is a small 2D rigid body physics engine written in C++17 for game-style simulations. It includes collision detection, contact solving, spring joints, ray casting, explosions, object slicing, and an OpenGL/ImGui testbed for interactive demos.
 
-  - Core: C++ with minimal dependencies
-  - Rendering: OpenGL 3.3+, GLAD, GLFW
-  - UI: Dear ImGui
-  - Serialization: Cereal, RapidJSON
-  - Build: CMake 3.20+ (any compiler with C++17 support — MSVC, GCC, Clang)
-  - Testing: CTest
+## Features
 
-## Build
+- Circle and convex polygon rigid bodies
+- Static and dynamic bodies with mass, inertia, friction, restitution, forces, torque, and gravity
+- Circle-circle, circle-polygon, and polygon-polygon collision detection
+- Sequential impulse contact solver with friction, restitution, positional correction, and Baumgarte-style velocity bias
+- Spring-style joints between bodies and from bodies to fixed points
+- Ray casting, ray scatter queries, shadow/line-of-sight helpers, slicing, and explosion demos
+- Simple spatial-hash collision broadphase
+- Interactive OpenGL testbed with 15 demos and runtime solver/debug controls
+- Framework-free geometry regression tests runnable through CTest
+
+## Build And Test
 
 From the repository root:
 
-```sh
+```powershell
 cmake -S . -B build
 cmake --build build --config Release --parallel
 ctest --test-dir build --build-config Release --output-on-failure
 ```
 
-Binaries are written to `build/bin/`. The `cphysics_testbed` executable expects
-its working directory to be `Rebuild of cphysics/Rebuild of cphysics/testbed/`
-so that `settings.bin` and `imgui.ini` resolve via the relative paths used in
-`Main.cpp`. When opening the generated VS solution, this is set automatically.
+With warnings treated as errors:
 
-GLFW is resolved via `find_package(glfw3)` if available on the system,
-otherwise CMake builds it from source via FetchContent (GLFW 3.4).
+```powershell
+cmake -S . -B build-werror -DCPHYSICS_WARNINGS_AS_ERRORS=ON
+cmake --build build-werror --config Release --parallel
+ctest --test-dir build-werror --build-config Release --output-on-failure
+```
 
-Optional CMake flags:
-- `-DCPHYSICS_WARNINGS_AS_ERRORS=ON` — treat warnings as errors (used in CI).
+Build outputs are written to `build/bin/`.
 
+## Run The Testbed
 
-  Project Structure
+The testbed expects its working directory to be `Rebuild of cphysics/Rebuild of cphysics/testbed` because settings are still loaded from a relative path.
 
-  Rebuild of cphysics/
-  ├── include/CPhysics/          # Core physics headers (20 files)
-  ├── src/                       # Physics implementation (~1,562 LOC)
-  ├── testbed/                   # OpenGL visualization + demos
-  │   ├── Tests/                 # 15 physics demonstration scenarios
-  │   └── imgui/                 # Dear ImGui integration
-  ├── dependencies/              # Third-party libraries (GLAD, ImGui, cereal)
-  └── tests/                     # Framework-free regression tests (run via ctest)
+From PowerShell:
 
-  Core Components
+```powershell
+cd "Rebuild of cphysics\Rebuild of cphysics\testbed"
+..\..\..\build\bin\cphysics_testbed.exe
+```
 
-  Physics Engine:
-  - World.h/cpp - Main simulation container, time-stepping, gravity
-  - Body.h/cpp - Rigid bodies with mass, velocity, forces, torque
-  - Shape.h - Abstract base (Circle, Polygon implementations)
-  - Arbiter.h/cpp - Collision detection and contact resolution
-  - Joint.h - Constraint system (body-to-body, body-to-point springs)
+To run only the regression executable directly:
 
-  Collision System:
-  - Broadphase: AABB overlap testing
-  - Narrowphase: Circle-circle, circle-polygon, polygon-polygon
-  - Sequential Impulses solver with friction and restitution
-  - Contact manifolds (up to 2 contact points)
+```powershell
+.\build\bin\cphysics_geometry_regression.exe
+```
 
-  Advanced Features:
-  - Slice.h - Cut objects along arbitrary lines
-  - ParticleExplosion.h, ProximityExplosion.h, RaycastExplosion.h - 3 explosion types
-  - Shadowcast.h - Visibility/shadow calculations
-  - Ray.h - Ray casting for queries
+## Project Layout
 
-  Testbed Demos (15 scenarios):
-  - Chains, Trebuchet, Newton's Cradle
-  - Friction, Restitution, Drag testing
-  - Stack, Bouncing ball, Wrecking ball
-  - All 3 explosion types, Object slicing
-  - Line of sight, Ray casting
+```text
+Rebuild of cphysics/Rebuild of cphysics/
+  include/CPhysics/        Core engine headers
+  src/                     Core engine implementation
+  testbed/                 OpenGL visualization, ImGui UI, and demos
+  testbed/Tests/           Interactive physics scenarios
+  dependencies/            Vendored GLAD, ImGui, and cereal headers/sources
+  tests/                   Framework-free regression tests
+```
 
-  Architecture Highlights
+Top-level CMake adds the nested engine directory and produces:
 
-  1. Polymorphic shape system - Virtual base class for extensibility
-  2. Sequential Impulses solver - Iterative constraint resolution
-  3. Spring-based joints - Configurable stiffness and damping
-  4. AABB optimization - Broadphase filtering before collision checks
-  5. Data-driven config - Serializable settings with ImGui controls
+- `cphysics` static library
+- `cphysics_testbed` interactive demo application
+- `cphysics_geometry_regression` regression test executable
 
-  Key Features
+## Recent Stability Work
 
-  - Pure C++ implementation (no external physics library)
-  - Convex polygon support (arbitrary vertex count)
-  - Stable object stacking
-  - Momentum conservation
-  - Static/dynamic friction
-  - Customizable restitution (bounciness)
-  - Real-time parameter tuning via GUI
-  - Save/load settings
+The engine has been hardened in several important areas:
 
-  The testbed (testbed/Main.cpp) provides an interactive OpenGL window where you can run demos, visualize physics (AABBs, contacts, centers of mass), and tweak solver
-  parameters in real-time.
+- Owning raw pointers were migrated to `std::unique_ptr<Body>`, `std::unique_ptr<Shape>`, and `std::unique_ptr<Joint>`.
+- `Body` and `World` copying is disabled to avoid double-free and use-after-free bugs.
+- Removing a body now removes joints that reference it.
+- Runtime validation was added for shapes, bodies, rays, slices, explosions, world stepping, and settings IO.
+- Degenerate polygons, invalid radii, invalid densities, bad ray distances, and zero-count explosions now fail with exceptions instead of silently producing NaNs.
+- Collision now uses a simple spatial-hash broadphase before narrowphase checks.
+- Regression tests cover geometry edge cases, invalid inputs, broadphase behavior, joint removal, slicing, and contact stabilization.
+- Testbed rendering now batches per frame instead of flushing after every body.
 
-  Build (CMake)
+## Important Caveats
 
-  From the repository root:
+- Raycast and shadow/line-of-sight queries still scan the full body list. The collision broadphase does not accelerate ray queries yet.
+- The testbed uses large world-unit objects with gravity set to `-9.81`, so some demos can look floaty unless gravity/impulses are retuned or a real fixed-timestep accumulator is added.
+- Joints still apply spring tension as impulses without timestep scaling, so joint behavior remains frame-rate dependent.
+- Many engine fields are public and mutable, so callers can still bypass invariants after construction.
+- The settings file path is still relative to the testbed working directory.
+- The repository currently preserves the original nested `Rebuild of cphysics/Rebuild of cphysics` layout.
 
-  ```powershell
-  cmake -S . -B build
-  cmake --build build --config Release
-  ctest --test-dir build -C Release
-  ```
+## Dependencies
 
-  CMake produces `cphysics`, `cphysics_testbed`, and `cphysics_geometry_regression`. The testbed keeps the Visual Studio working-directory behavior; when running it manually outside Visual Studio, use the `testbed/` directory as the working directory so `../Rebuild of cphysics/testbed/settings.bin` resolves as expected.
-  
+- CMake 3.20+
+- C++17 compiler: MSVC, GCC, or Clang
+- OpenGL
+- GLFW 3.4, resolved by `find_package(glfw3)` when available or fetched by CMake FetchContent otherwise
+- Vendored GLAD, Dear ImGui, and cereal
+
 ## Screenshots
-![a relative link](Images/Shadow%20casting%20c++.PNG)
-![a relative link](Images/Chains%20c++.PNG)
-![a relative link](Images/slice%20c++.PNG)
+
+![Shadow casting](Images/Shadow%20casting%20c++.PNG)
+![Chains](Images/Chains%20c++.PNG)
+![Slicing](Images/slice%20c++.PNG)
