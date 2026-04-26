@@ -14,6 +14,9 @@ static const real DEFAULT_PENETRATION_ALLOWANCE = 0.01f;
 static const real DEFAULT_PENETRATION_CORRECTION = 0.1f;
 static const real DEFAULT_BAUMGARTE_BETA = 0.1f;
 static const real BROADPHASE_CELL_SIZE = 50.0f;
+static const real SLEEP_LINEAR_THRESHOLD  = 0.5f;
+static const real SLEEP_ANGULAR_THRESHOLD = 0.3f;
+static const real SLEEP_TIME_THRESHOLD    = 0.3f;
 
 namespace {
 long long cellKey(int x, int y)
@@ -62,6 +65,14 @@ void World::applyLinearDrag(Body* b)
 	real dragForceMagnitude = velocityMagnitude * velocityMagnitude * b->linearDampening;
 	Vectors2D dragForceVector = b->velocity.normalizeVec() * (-dragForceMagnitude);
 	b->apply_force_to_centre(dragForceVector);
+}
+
+void World::applyLinearVelocityDamping(Body* b, real dt)
+{
+	// Linear (viscous) damping in addition to the quadratic drag above. Without
+	// this, low-speed motion (e.g. a long pendulum) never decays, since v^2 drag
+	// vanishes as v -> 0.
+	b->velocity *= std::max(0.0f, 1.0f - b->linearDampening * dt);
 }
 
 void World::validateStepInputs(real dt, real penetrationAllowance, real penetrationCorrection) const
@@ -121,6 +132,9 @@ void World::evaluateCollisionPair(Body* A, Body* B)
 		detect.narrowPhase();
 		if (detect.getContactCount() > 0) {
 			contacts.push_back(detect);
+			// Wake a sleeping body only when an awake dynamic body reaches it.
+			if (A->isAsleep && !B->isAsleep && B->invMass > 0.0f && B->velocity.len() > SLEEP_LINEAR_THRESHOLD) A->wake();
+			if (B->isAsleep && !A->isAsleep && A->invMass > 0.0f && A->velocity.len() > SLEEP_LINEAR_THRESHOLD) B->wake();
 		}
 	}
 }
@@ -129,11 +143,13 @@ void World::integrateForces(real dt)
 {
 	for (const std::unique_ptr<Body>& body : bodies) {
 		Body* b = body.get();
-		if (b->invMass == 0.0f) {
+		if (b->invMass == 0.0f || b->isAsleep) {
 			continue;
 		}
 
 		applyLinearDrag(b);
+		applyLinearVelocityDamping(b, dt);
+		b->angularVelocity *= (1.0f - b->angularDampening * dt);
 
 		if (b->affectedByGravity) {
 			b->velocity += w_gravity * dt;
@@ -164,7 +180,7 @@ void World::integrateVelocities(real dt)
 {
 	for (const std::unique_ptr<Body>& body : bodies) {
 		Body* b = body.get();
-		if (b->invMass == 0.0f) {
+		if (b->invMass == 0.0f || b->isAsleep) {
 			continue;
 		}
 
@@ -173,13 +189,31 @@ void World::integrateVelocities(real dt)
 
 		b->force.setZero();
 		b->torque = 0.0f;
+
+		const bool slow = b->velocity.len() < SLEEP_LINEAR_THRESHOLD
+		               && std::abs(b->angularVelocity) < SLEEP_ANGULAR_THRESHOLD;
+		if (slow) {
+			b->sleepTimer += dt;
+			if (b->sleepTimer >= SLEEP_TIME_THRESHOLD) {
+				b->sleep();
+			}
+		} else {
+			b->sleepTimer = 0.0f;
+		}
 	}
 }
 
 void World::solvePositionConstraints(real penetrationAllowance, real penetrationCorrection)
 {
-	for (Arbiter contact : contacts) {
-		contact.penetrationResolution(penetrationAllowance, penetrationCorrection);
+	// Each pass uses the cached penetration depth, so N passes at correction c
+	// would displace by N*c*overlap and overshoot. Split the user-facing target
+	// across passes so the slider is the per-frame total, not per-pass.
+	const unsigned int positionIterations = 4;
+	const real perPass = std::clamp(penetrationCorrection, 0.0f, 1.0f) / static_cast<real>(positionIterations);
+	for (unsigned int i = 0; i < positionIterations; i++) {
+		for (Arbiter contact : contacts) {
+			contact.penetrationResolution(penetrationAllowance, perPass);
+		}
 	}
 }
 
@@ -222,6 +256,11 @@ void World::removeBody(Body* body)
 			bodies.erase(it);
 			bodyView.clear();
 			jointView.clear();
+			// Anything resting on or near the removed body needs to re-evaluate its
+			// support — wake all dynamic bodies so they fall/settle as appropriate.
+			for (const std::unique_ptr<Body>& other : bodies) {
+				if (other && other->invMass > 0.0f) other->wake();
+			}
 			return;
 		}
 	}
@@ -241,6 +280,8 @@ Joint* World::addJoint(std::unique_ptr<Joint> joint)
 		throw std::invalid_argument("Cannot add a null joint to the world.");
 	}
 	Joint* rawJoint = joint.get();
+	// Bodies attached to joints must stay awake so the joint can drive them.
+	rawJoint->disableBodySleep();
 	joints.push_back(std::move(joint));
 	jointView.clear();
 	return rawJoint;

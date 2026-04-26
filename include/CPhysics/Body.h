@@ -50,6 +50,13 @@ public:
 	bool affectedByGravity;
 	bool particle;
 
+	bool isAsleep;
+	bool canSleep;
+	real sleepTimer;
+
+	void wake()  { isAsleep = false; sleepTimer = 0.0f; }
+	void sleep() { if (!canSleep) return; isAsleep = true; velocity.setZero(); angularVelocity = 0.0f; }
+
 	std::unique_ptr<Shape> shape;
 	std::unique_ptr<AABB> aabb;
 	

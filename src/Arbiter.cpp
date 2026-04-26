@@ -390,7 +390,7 @@ void Arbiter::polygonVsPolygon()
 }
 
 
-void Arbiter::solve(real dt, real penetrationAllowance, real baumgarteBeta)
+void Arbiter::solve(real /*dt*/, real /*penetrationAllowance*/, real /*baumgarteBeta*/)
 {
 	Vectors2D contactA = contacts[0] - A->position;
 	Vectors2D contactB = contacts[0] - B->position;
@@ -408,20 +408,14 @@ void Arbiter::solve(real dt, real penetrationAllowance, real baumgarteBeta)
 		return;
 	}
 
-	real bias = 0.0f;
-	if (dt > EPSILON) {
-		const real beta = std::clamp(baumgarteBeta, 0.0f, 0.2f);
-		const real positionError = std::max(penetration - penetrationAllowance, 0.0f);
-		bias = beta * positionError / dt;
-	}
-
-	// Avoid injecting more impulse once the contact is already separating fast enough.
-	if (contactVel >= bias) {
+	if (contactVel >= 0.0f) {
 		return;
 	}
 
-	real j = (-(e + 1.0f) * contactVel) + bias;
-	j /= inverseMassSum;
+	// Zero restitution for slow contacts to prevent jitter on resting bodies.
+	real restitution = std::abs(contactVel) < 1.0f ? 0.0f : e;
+
+	real j = -(restitution + 1.0f) * contactVel / inverseMassSum;
 
 	Vectors2D impulse = normal * j;
 	B->applyLinearImpulse(impulse, contactB);
@@ -429,19 +423,39 @@ void Arbiter::solve(real dt, real penetrationAllowance, real baumgarteBeta)
 
 	relativeVel = (B->velocity + crossProduct(contactB, B->angularVelocity)) - (A->velocity) - crossProduct(contactA, A->angularVelocity);
 
+	// Skip friction for near-zero normal impulses to avoid lateral jitter on resting contacts.
+	if (j < 0.01f) {
+		return;
+	}
+
 	Vectors2D t = relativeVel;
 	t += normal * -dotProduct(relativeVel, normal);
-	t.Normalize();
+	real tangentSpeed = t.len();
+	if (tangentSpeed < 0.001f) {
+		return;
+	}
+	t *= (1.0f / tangentSpeed);
 
-	real jt = -dotProduct(relativeVel, t);
-	jt /= inverseMassSum;
+	// Effective mass along the tangent axis (different from the normal axis when
+	// contact points are off-centre, e.g. a box resting on a flat floor).
+	real act = crossProduct(contactA, t);
+	real bct = crossProduct(contactB, t);
+	real inverseMassSumT = A->invMass + B->invMass + (act * act) * A->invI + (bct * bct) * B->invI;
+	if (inverseMassSumT <= EPSILON) {
+		return;
+	}
+
+	real jt = -tangentSpeed / inverseMassSumT;
 
 	Vectors2D tangentImpulse;
 	if (std::abs(jt) < j * sf) {
+		// Static friction: cancel the tangent velocity outright. For very small
+		// residual sliding, snap to zero to avoid lateral chatter.
 		tangentImpulse = t * jt;
 	}
 	else {
-		tangentImpulse = t * j * (-df);
+		// Dynamic friction: clamp to the Coulomb cone.
+		tangentImpulse = t * (-j * df);
 	}
 
 	B->applyLinearImpulse(tangentImpulse, contactB);

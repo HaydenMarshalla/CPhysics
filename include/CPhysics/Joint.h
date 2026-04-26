@@ -13,6 +13,7 @@ public:
 	virtual const Vectors2D& getStartPos() const = 0;
 	virtual const Vectors2D& getEndPos() const = 0;
 	virtual bool referencesBody(const Body* body) const;
+	virtual void disableBodySleep() { if (object1) object1->canSleep = false; }
 	
 protected:
 	Body* object1 = nullptr;

@@ -24,8 +24,11 @@ Body::Body(std::unique_ptr<Shape> shapeIn, real x, real y)
 	dynamicFriction = 0.2f;
 	staticFriction = 0.5f;
 
-	linearDampening = 0.0f;
-	angularDampening = 0.0f;
+	linearDampening = 0.05f;
+	angularDampening = 0.05f;
+	isAsleep = false;
+	canSleep = true;
+	sleepTimer = 0.0f;
 
 	affectedByGravity = true;
 	particle = false;
@@ -65,11 +68,13 @@ void Body::setStatic()
 
 void Body::apply_force(const Vectors2D& force, const Vectors2D& contactPoint)
 {
+	wake();
 	this->force += force;
 	torque += crossProduct(contactPoint, force);
 };
 
 void Body::apply_force_to_centre(const Vectors2D& force) {
+	wake();
 	this->force += force;
 };
 
@@ -79,5 +84,6 @@ void Body::applyLinearImpulse(const Vectors2D& impulse, const Vectors2D& contact
 };
 
 void Body::apply_linear_impulse_to_centre(const Vectors2D& impulse) {
+	wake();
 	velocity += impulse * invMass;
 }

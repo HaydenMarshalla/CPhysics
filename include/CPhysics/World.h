@@ -67,6 +67,7 @@ private:
 	void integrateVelocities(real dt);
 	void solvePositionConstraints(real penetrationAllowance, real penetrationCorrection);
 	static void applyLinearDrag(Body* body);
+	static void applyLinearVelocityDamping(Body* body, real dt);
 	void refreshBodyView() const;
 	void refreshJointView() const;
 

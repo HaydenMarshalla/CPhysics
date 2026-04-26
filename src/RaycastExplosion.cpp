@@ -41,6 +41,7 @@ void RaycastExplosion::applyBlastImpulse(real blastPower)
 		real invDistance = 1.0f / distance;
 		Vectors2D impulseMag = blastDir.normalizeVec() * (blastPower * invDistance);
 		Body* b = ray.getB();
+		b->wake();
 		b->applyLinearImpulse(impulseMag, ray.getCoord() - b->position);
 	}
 }

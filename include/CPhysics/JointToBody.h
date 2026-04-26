@@ -14,6 +14,7 @@ public:
 	real calculateTension() override;
 	real rateOfChangeOfExtension() override;
 	bool referencesBody(const Body* body) const override;
+	void disableBodySleep() override { Joint::disableBodySleep(); if (object2) object2->canSleep = false; }
 private:
 	Body* object2;
 	Vectors2D offset2;
