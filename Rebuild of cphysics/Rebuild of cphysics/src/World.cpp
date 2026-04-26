@@ -3,10 +3,33 @@
 #include "CPhysics/Body.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 static const real DEFAULT_PENETRATION_ALLOWANCE = 0.01f;
 static const real DEFAULT_PENETRATION_CORRECTION = 0.1f;
+static const real BROADPHASE_CELL_SIZE = 50.0f;
+
+namespace {
+long long cellKey(int x, int y)
+{
+	return (static_cast<long long>(static_cast<unsigned int>(x)) << 32) ^ static_cast<unsigned int>(y);
+}
+
+unsigned long long pairKey(unsigned int a, unsigned int b)
+{
+	return (static_cast<unsigned long long>(a) << 32) | b;
+}
+
+int cellCoord(real value)
+{
+	return static_cast<int>(std::floor(value / BROADPHASE_CELL_SIZE));
+}
+}
 
 World::World()
 {
@@ -43,26 +66,49 @@ void World::applyLinearDrag(Body* b)
 void World::collisionCheck()
 {
 	contacts.clear();
-	for (unsigned int a = 0; a < getBodies().size(); a++) {
-		Body* A = bodies[a].get();
+	std::unordered_map<long long, std::vector<unsigned int>> grid;
+	std::unordered_set<unsigned long long> evaluatedPairs;
 
-		for (unsigned int b = a + 1; b < bodies.size(); b++) {
+	for (unsigned int index = 0; index < bodies.size(); index++) {
+		Body* body = bodies[index].get();
+		if (body == nullptr || body->aabb == nullptr) {
+			continue;
+		}
 
-			Body* B = bodies[b].get();
+		AABB worldAabb(body->aabb->getMin(), body->aabb->getMax());
+		worldAabb.addOffset(body->position);
+		const int minX = cellCoord(worldAabb.getMin().x);
+		const int maxX = cellCoord(worldAabb.getMax().x);
+		const int minY = cellCoord(worldAabb.getMin().y);
+		const int maxY = cellCoord(worldAabb.getMax().y);
 
-			//Ignored overlapping static objects
-			if ((A->invMass == 0.0f && B->invMass == 0.0f) || (A->particle && B->particle)) {
-				continue;
-			}
-
-			if (AABBOverLap(A, B)) {
-				//Narrow phase check
-				Arbiter detect(A, B);
-				detect.narrowPhase();
-				if (detect.getContactCount() > 0) {
-					contacts.push_back(detect);
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				std::vector<unsigned int>& cellBodies = grid[cellKey(x, y)];
+				for (unsigned int otherIndex : cellBodies) {
+					const unsigned int first = std::min(index, otherIndex);
+					const unsigned int second = std::max(index, otherIndex);
+					if (evaluatedPairs.insert(pairKey(first, second)).second) {
+						evaluateCollisionPair(bodies[first].get(), bodies[second].get());
+					}
 				}
+				cellBodies.push_back(index);
 			}
+		}
+	}
+}
+
+void World::evaluateCollisionPair(Body* A, Body* B)
+{
+	if ((A->invMass == 0.0f && B->invMass == 0.0f) || (A->particle && B->particle)) {
+		return;
+	}
+
+	if (AABBOverLap(A, B)) {
+		Arbiter detect(A, B);
+		detect.narrowPhase();
+		if (detect.getContactCount() > 0) {
+			contacts.push_back(detect);
 		}
 	}
 }
@@ -74,6 +120,13 @@ void World::step(real dt, unsigned int iterations)
 
 void World::step(real dt, unsigned int iterations, real penetrationAllowance, real penetrationCorrection)
 {
+	if (!std::isfinite(dt) || dt < 0.0f) {
+		throw std::invalid_argument("World step dt must be finite and non-negative.");
+	}
+	if (!std::isfinite(penetrationAllowance) || penetrationAllowance < 0.0f ||
+		!std::isfinite(penetrationCorrection) || penetrationCorrection < 0.0f) {
+		throw std::invalid_argument("World penetration parameters must be finite and non-negative.");
+	}
 	collisionCheck();
 
 	for (unsigned int i = 0; i < bodies.size(); i++) {
@@ -121,6 +174,9 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 
 Body* World::addBody(std::unique_ptr<Body> b)
 {
+	if (b == nullptr) {
+		throw std::invalid_argument("Cannot add a null body to the world.");
+	}
 	Body* rawBody = b.get();
 	bodies.push_back(std::move(b));
 	bodyView.clear();
@@ -153,6 +209,9 @@ void World::removeAllBodies()
 
 Joint* World::addJoint(std::unique_ptr<Joint> joint)
 {
+	if (joint == nullptr) {
+		throw std::invalid_argument("Cannot add a null joint to the world.");
+	}
 	Joint* rawJoint = joint.get();
 	joints.push_back(std::move(joint));
 	jointView.clear();

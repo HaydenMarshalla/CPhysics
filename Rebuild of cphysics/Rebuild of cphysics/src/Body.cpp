@@ -1,9 +1,16 @@
 #include "CPhysics/Shape.h"
 
+#include <stdexcept>
 #include <utility>
 
 Body::Body(std::unique_ptr<Shape> shapeIn, real x, real y)
 {
+	if (shapeIn == nullptr) {
+		throw std::invalid_argument("Body requires a shape.");
+	}
+	if (!isValidCheck(x) || !isValidCheck(y)) {
+		throw std::invalid_argument("Body position must be finite.");
+	}
 	shape = std::move(shapeIn);
 	shape->setBody(this);
 

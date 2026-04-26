@@ -1,8 +1,11 @@
 #include "CPhysics/Body.h"
 #include "CPhysics/Circle.h"
 #include "CPhysics/JointToBody.h"
+#include "CPhysics/ParticleExplosion.h"
 #include "CPhysics/Polygon.h"
+#include "CPhysics/ProximityExplosion.h"
 #include "CPhysics/Ray.h"
+#include "CPhysics/Rayscatter.h"
 #include "CPhysics/Slice.h"
 #include "CPhysics/World.h"
 
@@ -17,6 +20,25 @@
 		if (!(condition)) \
 		{ \
 			std::cerr << "Requirement failed: " #condition << " at " << __FILE__ << ":" << __LINE__ << '\n'; \
+			std::abort(); \
+		} \
+	} while (false)
+
+#define REQUIRE_THROWS(expression) \
+	do \
+	{ \
+		bool threw = false; \
+		try \
+		{ \
+			(void)(expression); \
+		} \
+		catch (const std::invalid_argument&) \
+		{ \
+			threw = true; \
+		} \
+		if (!threw) \
+		{ \
+			std::cerr << "Expected invalid_argument: " #expression << " at " << __FILE__ << ":" << __LINE__ << '\n'; \
 			std::abort(); \
 		} \
 	} while (false)
@@ -153,6 +175,43 @@ void removingBodyRemovesReferencingJoints()
 	REQUIRE(world.getJoints().empty());
 	world.step(1.0f / 60.0f, 1);
 }
+
+void invalidShapesAreRejected()
+{
+	REQUIRE_THROWS(Circle(0.0f));
+	REQUIRE_THROWS(Polygon(1.0f, 2u));
+	REQUIRE_THROWS(Polygon(0.0f, 1.0f));
+	REQUIRE_THROWS(Polygon(std::vector<Vectors2D>{
+		Vectors2D(0.0f, 0.0f),
+		Vectors2D(1.0f, 0.0f),
+		Vectors2D(2.0f, 0.0f)
+	}));
+	REQUIRE_THROWS(Body(std::unique_ptr<Shape>(), 0.0f, 0.0f));
+}
+
+void invalidRaysAndExplosionsAreRejected()
+{
+	World world;
+	REQUIRE_THROWS(Ray(Vectors2D(), Vectors2D(), 1.0f));
+	REQUIRE_THROWS(Ray(Vectors2D(), Vectors2D(1.0f, 0.0f), 0.0f));
+	REQUIRE_THROWS(Rayscatter(Vectors2D(), 0));
+	REQUIRE_THROWS(ParticleExplosion(Vectors2D(), 0, 1.0f, &world));
+	REQUIRE_THROWS(ParticleExplosion(Vectors2D(), 1, 1.0f, nullptr));
+	REQUIRE_THROWS(ProximityExplosion(Vectors2D(), 0));
+}
+
+void broadphaseFindsContactsInSeparateCells()
+{
+	World world;
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
+	world.createBody<Polygon>(0.5f, 0.0f, 1.0f, 1.0f);
+	world.createBody<Polygon>(200.0f, 0.0f, 1.0f, 1.0f);
+	world.createBody<Polygon>(200.5f, 0.0f, 1.0f, 1.0f);
+
+	world.step(0.0f, 1);
+
+	REQUIRE(world.getContactsVector().size() == 2);
+}
 }
 
 int main()
@@ -166,5 +225,8 @@ int main()
 	slicedBodyCanBeSlicedAgain();
 	oneSliceCanCutMultipleBodies();
 	removingBodyRemovesReferencingJoints();
+	invalidShapesAreRejected();
+	invalidRaysAndExplosionsAreRejected();
+	broadphaseFindsContactsInSeparateCells();
 	return 0;
 }

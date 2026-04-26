@@ -1,5 +1,8 @@
 #include "CPhysics/RaycastExplosion.h"
 
+#include <cmath>
+#include <stdexcept>
+
 RaycastExplosion::RaycastExplosion(const Vectors2D& epicentre, unsigned noOfRays, real distance,
 	const std::vector<Body*>& worldBodies)
 {
@@ -27,10 +30,13 @@ void RaycastExplosion::update(const std::vector<Body*>& worldBodies)
 
 void RaycastExplosion::applyBlastImpulse(real blastPower)
 {
+	if (!std::isfinite(blastPower)) {
+		throw std::invalid_argument("Raycast explosion blast power must be finite.");
+	}
 	for (RayInformation ray : raysInContact) {
 		Vectors2D blastDir = ray.getCoord() - rayScatter.getEpicentre();
 		real distance = blastDir.len();
-		if (distance == 0.0f) return;
+		if (distance <= EPSILON) continue;
 
 		real invDistance = 1.0f / distance;
 		Vectors2D impulseMag = blastDir.normalizeVec() * (blastPower * invDistance);

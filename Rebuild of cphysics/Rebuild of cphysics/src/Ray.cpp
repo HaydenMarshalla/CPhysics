@@ -4,8 +4,14 @@
 #include "CPhysics/Geometry.h"
 #include "CPhysics/Polygon.h"
 
+#include <cmath>
+#include <stdexcept>
+
 void Ray::changeDirection(const Vectors2D& newDirection)
 {
+	if (!newDirection.isValid() || newDirection.lengthSqr() <= EPSILON * EPSILON) {
+		throw std::invalid_argument("Ray direction must be finite and non-zero.");
+	}
 	direction = newDirection.normalizeVec();
 }
 
@@ -84,6 +90,15 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 
 void Ray::init(const Vectors2D& startPoint, const Vectors2D& direction, real distance)
 {
+	if (!startPoint.isValid()) {
+		throw std::invalid_argument("Ray start point must be finite.");
+	}
+	if (!direction.isValid() || direction.lengthSqr() <= EPSILON * EPSILON) {
+		throw std::invalid_argument("Ray direction must be finite and non-zero.");
+	}
+	if (!std::isfinite(distance) || distance <= EPSILON) {
+		throw std::invalid_argument("Ray distance must be finite and positive.");
+	}
 	this->startPoint = startPoint;
 	this->direction = direction.normalizeVec();
 	this->distance = distance;

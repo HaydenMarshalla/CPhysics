@@ -1,13 +1,25 @@
 #include "CPhysics/ProximityExplosion.h"
 
+#include <cmath>
+#include <stdexcept>
+
 ProximityExplosion::ProximityExplosion(const Vectors2D& centrePoint, unsigned radius)
 {
+	if (!centrePoint.isValid()) {
+		throw std::invalid_argument("Proximity explosion centre must be finite.");
+	}
+	if (radius == 0) {
+		throw std::invalid_argument("Proximity explosion radius must be positive.");
+	}
 	epicentre = centrePoint;
 	proximity = radius;
 }
 
 void ProximityExplosion::changeEpicentre(const Vectors2D& v)
 {
+	if (!v.isValid()) {
+		throw std::invalid_argument("Proximity explosion centre must be finite.");
+	}
 	epicentre = v;
 }
 
@@ -32,10 +44,13 @@ void ProximityExplosion::updateLinesToBody()
 
 void ProximityExplosion::applyBlastImpulse(real blastPower)
 {
+	if (!std::isfinite(blastPower)) {
+		throw std::invalid_argument("Proximity explosion blast power must be finite.");
+	}
 	for (Body* b : bodiesEffected) {
 		Vectors2D blastDir = b->position - epicentre;
 		real distance = blastDir.len();
-		if (distance == 0.0f) return;
+		if (distance <= EPSILON) continue;
 
 		//Not physically correct as it should be blast * radius to object ^ 2 as the pressure of an explosion in 2D dissipates
 		real invDistance = 1.0f / distance;

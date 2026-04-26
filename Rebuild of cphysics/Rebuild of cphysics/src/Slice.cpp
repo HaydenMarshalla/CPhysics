@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace {
 struct SliceCandidate {
@@ -72,6 +73,15 @@ void addVerticesAfterEdge(
 
 Slice::Slice(const Vectors2D& startPoint, const Vectors2D& direction, real distance)
 {
+	if (!startPoint.isValid()) {
+		throw std::invalid_argument("Slice start point must be finite.");
+	}
+	if (!direction.isValid()) {
+		throw std::invalid_argument("Slice direction must be finite.");
+	}
+	if (!std::isfinite(distance) || distance < 0.0f) {
+		throw std::invalid_argument("Slice distance must be finite and non-negative.");
+	}
 	this->startPoint = startPoint;
 	this->direction = direction.normalizeVec();
 	this->distance = distance;
@@ -222,6 +232,9 @@ void Slice::sliceObjects(World& world) {
 
 void Slice::setDirection(const Vectors2D& sliceVector)
 {
+	if (!sliceVector.isValid()) {
+		throw std::invalid_argument("Slice end point must be finite.");
+	}
 	direction = sliceVector - startPoint;
 	distance = direction.len();
 	if (distance > EPSILON) {

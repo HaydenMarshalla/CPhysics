@@ -6,7 +6,10 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "Tests/pch.h"
 
+#include <cmath>
+#include <exception>
 #include <fstream>
+#include <iostream>
 #include <sys/stat.h>
 
 
@@ -284,12 +287,43 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
 }
 
 //Loads settings via binary serialization
-void loadSettings(const std::string& fileName) {
+static bool validateSettings()
+{
+	return settings.window_width > 0 &&
+		settings.window_height > 0 &&
+		std::isfinite(settings.hertz) &&
+		settings.hertz > 0.0f &&
+		settings.solverIterations > 0 &&
+		std::isfinite(settings.PENETRATION_ALLOWANCE) &&
+		settings.PENETRATION_ALLOWANCE >= 0.0f &&
+		std::isfinite(settings.PENETRATION_CORRECTION) &&
+		settings.PENETRATION_CORRECTION >= 0.0f &&
+		settings.testIndex <= static_cast<unsigned int>(lastTestIndex);
+}
+
+bool loadSettings(const std::string& fileName) {
 	std::ifstream os(fileName, std::ios::binary);
-	{
+	if (!os) {
+		return false;
+	}
+
+	try {
 		cereal::BinaryInputArchive ar(os);
 		ar(settings);
 	}
+	catch (const std::exception& e) {
+		std::cerr << "Failed to load settings, using defaults: " << e.what() << std::endl;
+		settings.Reset();
+		return false;
+	}
+
+	if (!validateSettings()) {
+		std::cerr << "Invalid settings file, using defaults." << std::endl;
+		settings.Reset();
+		return false;
+	}
+
+	return true;
 }
 
 inline bool checkFileExists(const std::string& name) {
@@ -298,14 +332,25 @@ inline bool checkFileExists(const std::string& name) {
 }
 
 //Saves settings via binary serialization
-void saveSettings(const std::string& fileName) {
+bool saveSettings(const std::string& fileName) {
 	settings.window_width = camera.window_width;
 	settings.window_height = camera.window_height;
 	std::ofstream is(fileName, std::ios::binary);
-	{
+	if (!is) {
+		std::cerr << "Failed to open settings file for writing: " << fileName << std::endl;
+		return false;
+	}
+
+	try {
 		cereal::BinaryOutputArchive ar(is);
 		ar(settings);
 	}
+	catch (const std::exception& e) {
+		std::cerr << "Failed to save settings: " << e.what() << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 static void initGlfw() {

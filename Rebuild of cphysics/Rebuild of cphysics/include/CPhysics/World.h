@@ -59,6 +59,7 @@ public:
 
 private:
 	void collisionCheck();
+	void evaluateCollisionPair(Body* A, Body* B);
 	static void applyLinearDrag(Body* body);
 	void refreshBodyView() const;
 	void refreshJointView() const;

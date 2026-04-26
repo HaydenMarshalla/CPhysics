@@ -5,7 +5,7 @@
 class Circle : public Shape
 {
 public:
-	Circle(real r) : radius(r) {}
+	Circle(real r);
 
 	Type getType() const override;
 	void calcMass(real density) override;

@@ -1,20 +1,49 @@
 #include "CPhysics/Polygon.h"
 
-#include <cassert>
+#include <cmath>
 #include <memory>
+#include <stdexcept>
+
+namespace {
+bool isFiniteVertex(const Vectors2D& vertex)
+{
+	return vertex.isValid();
+}
+
+real signedArea(const std::vector<Vectors2D>& vertices)
+{
+	real area = 0.0f;
+	for (unsigned int i = 0; i < vertices.size(); i++) {
+		area += crossProduct(vertices[i], vertices[(i + 1) % vertices.size()]);
+	}
+	return area * 0.5f;
+}
+}
 
 Polygon::Polygon(const std::vector<Vectors2D>& vertLists)
 {
+	if (vertLists.size() < 3) {
+		throw std::invalid_argument("Polygon requires at least three vertices.");
+	}
+	for (const Vectors2D& vertex : vertLists) {
+		if (!isFiniteVertex(vertex)) {
+			throw std::invalid_argument("Polygon vertices must be finite.");
+		}
+	}
 	generateHull(vertLists, static_cast<unsigned int>(vertLists.size()));
 	vertexCount = static_cast<unsigned int>(vertices.size());
-	assert(vertexCount > 2);
+	if (vertexCount < 3 || std::fabs(signedArea(vertices)) <= EPSILON) {
+		throw std::invalid_argument("Polygon vertices must form a non-degenerate convex hull.");
+	}
 	calcNormals();
 }
 
 Polygon::Polygon(real radius, unsigned int noOfSides)
 {
 	vertexCount = noOfSides;
-	assert(vertexCount > 2);
+	if (!std::isfinite(radius) || radius <= EPSILON || vertexCount < 3) {
+		throw std::invalid_argument("Regular polygon requires a finite positive radius and at least three sides.");
+	}
 	for (unsigned int i = 0; i < noOfSides; i++) {
 		real angle = 2.0f * PI / static_cast<float>(noOfSides) * (static_cast<float>(i) + 0.75f);
 		real pointX = radius * cos(angle);
@@ -26,6 +55,9 @@ Polygon::Polygon(real radius, unsigned int noOfSides)
 
 Polygon::Polygon(real width, real height)
 {
+	if (!std::isfinite(width) || !std::isfinite(height) || width <= EPSILON || height <= EPSILON) {
+		throw std::invalid_argument("Box polygon requires finite positive half extents.");
+	}
 	vertexCount = 4;
 	vertices.emplace_back(-width, -height);
 	vertices.emplace_back(width, -height);
@@ -65,6 +97,10 @@ void Polygon::calcMass(const real density)
 		I += (0.25f * k * areaOfParallelogram) * (intx2 + inty2);
 	}
 
+	if (!std::isfinite(area) || std::fabs(area) <= EPSILON) {
+		throw std::invalid_argument("Polygon area must be non-zero.");
+	}
+
 	centroidDistVec *= (1.0f / area);
 
 	for (Vectors2D& vertice : vertices)
@@ -72,9 +108,13 @@ void Polygon::calcMass(const real density)
 		vertice -= centroidDistVec;
 	}
 
-	body->mass = density * area;
+	if (!std::isfinite(density) || density <= 0.0f) {
+		throw std::invalid_argument("Polygon density must be finite and positive.");
+	}
+
+	body->mass = density * std::fabs(area);
 	body->invMass = (body->mass != 0.0f) ? 1.0f / body->mass : 0.0f;
-	body->I = I * density;
+	body->I = std::fabs(I * density);
 	body->invI = (body->I != 0.0f) ? 1.0f / body->I : 0.0f;
 }
 
@@ -124,7 +164,9 @@ void Polygon::setRotation(const real radians)
 void Polygon::calcNormals()
 {
 	normals.clear();
-	assert(vertexCount > 2);
+	if (vertexCount < 3) {
+		throw std::invalid_argument("Polygon normals require at least three vertices.");
+	}
 	for (unsigned int i = 0; i < vertexCount; i++) {
 		Vectors2D face = vertices[(i + 1) % vertexCount] - vertices[i];
 
