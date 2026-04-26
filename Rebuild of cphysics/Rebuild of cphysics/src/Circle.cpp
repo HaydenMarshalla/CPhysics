@@ -1,6 +1,7 @@
 #include "CPhysics/Circle.h"
 
 #include <cassert>
+#include <memory>
 
 Shape::Type Circle::getType() const
 {
@@ -19,7 +20,7 @@ void Circle::calcMass(real density)
 void Circle::createAABB()
 {
 	if (body->aabb == nullptr) {
-		body->aabb = new AABB(Vectors2D(-radius, -radius), Vectors2D(radius, radius));
+		body->aabb = std::make_unique<AABB>(Vectors2D(-radius, -radius), Vectors2D(radius, radius));
 	}
 }
 

@@ -15,33 +15,26 @@ public:
 
 		resetCamera();
 
-		Body* ground = new Body(new Polygon(10000.0f, 2000.0f), 0.0f, -2040.0f);
+		Body* ground = world.createBody<Polygon>(0.0f, -2040.0f, 10000.0f, 2000.0f);
 		ground->setDensity(0.0f);
-		world.addBody(ground);
 
-		Body* arm = new Body(new Polygon(50.0f, 2.0f), 0.0f, 0.0f);
+		Body* arm = world.createBody<Polygon>(0.0f, 0.0f, 50.0f, 2.0f);
 		arm->setOrientation(0.78f);
 		arm->setDensity(2.0f);
-		world.addBody(arm);
 
-		Joint* j1 = new JointToPoint(arm, Vectors2D(20.469f, 20.469f), 0.0f, 1000.0f, 100.0f, true, Vectors2D(28.947f, 0.0f));
-		world.addJoint(j1);
+		world.createJoint<JointToPoint>(arm, Vectors2D(20.469f, 20.469f), 0.0f, 1000.0f, 100.0f, true, Vectors2D(28.947f, 0.0f));
 
-		Body* counterWeight = new Body(new Circle(5.0f), 35.355f, 21.0f);
+		Body* counterWeight = world.createBody<Circle>(35.355f, 21.0f, 5.0f);
 		counterWeight->setDensity(133.0f);
-		world.addBody(counterWeight);
 
-		Joint* j2 = new JointToBody(arm, counterWeight, 20.0f, 7000.0f, 10.0f, false, Vectors2D(50.0f, 0.0f), Vectors2D(0.0f, 0.0f));
-		world.addJoint(j2);
+		world.createJoint<JointToBody>(arm, counterWeight, 20.0f, 7000.0f, 10.0f, false, Vectors2D(50.0f, 0.0f), Vectors2D(0.0f, 0.0f));
 
-		Body* payload = new Body(new Circle(5.0f), 43.592f, -35.0f);
+		Body* payload = world.createBody<Circle>(43.592f, -35.0f, 5.0f);
 		payload->dynamicFriction = 0.0f;
 		payload->staticFriction = 0.0f;
 		payload->setDensity(1.0f);
-		world.addBody(payload);
 
-		Joint* j3 = new JointToBody(arm, payload, 79.0f, 100.0f, 1.0f, true, Vectors2D(-50.0f, 0.0f), Vectors2D());
-		world.addJoint(j3);
+		world.createJoint<JointToBody>(arm, payload, 79.0f, 100.0f, 1.0f, true, Vectors2D(-50.0f, 0.0f), Vectors2D());
 
 		const int noOfPillars = 4;
 		const real height = 40.0f;
@@ -55,15 +48,12 @@ public:
 		for (unsigned int k = 0; k < noOfPillars; k++) {
 			x += height;
 
-			Body* initialPillar = new Body(new Polygon(width + 2.0f, height), x, y + height);
-			addPillar(initialPillar, 0.2f);
+			addPillar(std::make_unique<Body>(std::make_unique<Polygon>(width + 2.0f, height), x, y + height), 0.2f);
 
 			for (unsigned int i = 0; i < noOfPillars - k; i++) {
-				Body* rightPillar = new Body(new Polygon(width + 2.0f, height), x + widthOfTopPillar + (widthOfTopPillar * static_cast<float>(i)), y + height);
-				addPillar(rightPillar, 0.2f);
+				addPillar(std::make_unique<Body>(std::make_unique<Polygon>(width + 2.0f, height), x + widthOfTopPillar + (widthOfTopPillar * static_cast<float>(i)), y + height), 0.2f);
 
-				Body* topPillar = new Body(new Polygon(height, width), x + height + (static_cast<float>(i) * widthOfTopPillar), y + widthOfTopPillar + width);
-				addPillar(topPillar, 0.2f);
+				addPillar(std::make_unique<Body>(std::make_unique<Polygon>(height, width), x + height + (static_cast<float>(i) * widthOfTopPillar), y + widthOfTopPillar + width), 0.2f);
 			}
 			y += widthOfTopPillar + width + width;
 		}

@@ -26,7 +26,7 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 
 	for (Body* B : bodiesToEvaluate) {
 		if (B->shape->getType() == Polygon::ePolygon) {
-			Polygon* poly = (Polygon*)B->shape;
+			Polygon* poly = static_cast<Polygon*>(B->shape.get());
 			for (unsigned int i = 0; i < poly->getVertexCount(); i++) {
 				Vectors2D startOfPolyEdge = poly->getVertices()[i];
 				Vectors2D endOfPolyEdge = poly->getVertices()[i + 1 == poly->getVertexCount() ? 0 : i + 1];
@@ -46,7 +46,7 @@ void Ray::updateProjection(const std::vector<Body*>& bodiesToEvaluate)
 			}
 		}
 		else if (B->shape->getType() == Polygon::eCircle) {
-			Circle* circle = (Circle*)B->shape;
+			Circle* circle = static_cast<Circle*>(B->shape.get());
 			Vectors2D circleCenter = B->position;
 			real r = circle->getRadius();
 			Vectors2D difInCenters = startPoint - circleCenter;

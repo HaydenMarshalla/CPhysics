@@ -11,9 +11,8 @@ public:
 
 		resetCamera();
 
-		Body* ground = new Body(new Polygon(10000.0f, 2000.0f), 0.0f, -2040.0f);
+		Body* ground = world.createBody<Polygon>(0.0f, -2040.0f, 10000.0f, 2000.0f);
 		ground->setDensity(0.0f);
-		world.addBody(ground);
 
 		createTower(2, 0.0f, -40.0f);
 

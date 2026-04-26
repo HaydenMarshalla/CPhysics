@@ -89,7 +89,7 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 	for (Body* B : bodiesToEvaluate) {
 		std::vector<SliceCandidate> bodyIntersections;
 		if (B->shape->getType() == Polygon::ePolygon) {
-			Polygon* poly = (Polygon*)B->shape;
+			Polygon* poly = static_cast<Polygon*>(B->shape.get());
 			for (unsigned int i = 0; i < poly->getVertexCount(); i++) {
 				Vectors2D startOfPolyEdge = poly->getVertices()[i];
 				Vectors2D endOfPolyEdge = poly->getVertices()[i + 1 == poly->getVertexCount() ? 0 : i + 1];
@@ -106,7 +106,7 @@ void Slice::updateProjection(const std::vector<Body*>& bodiesToEvaluate) {
 			}
 		}
 		else if (B->shape->getType() == Polygon::eCircle) {
-			Circle* circle = (Circle*)B->shape;
+			Circle* circle = static_cast<Circle*>(B->shape.get());
 			Vectors2D circleCenter = B->position;
 			real r = circle->getRadius();
 			Vectors2D difInCenters = startPoint - circleCenter;
@@ -158,7 +158,7 @@ void Slice::sliceObjects(World& world) {
 
 		bool isStatic = b->mass == 0.0f;
 		if (b->shape->getType() == Polygon::ePolygon) {
-			Polygon* p = (Polygon*)b->shape;
+			Polygon* p = static_cast<Polygon*>(b->shape.get());
 
 			RayInformation intersection1 = intersectingBodiesInfo[i];
 			RayInformation intersection2 = intersectingBodiesInfo[i + 1];
@@ -187,12 +187,10 @@ void Slice::sliceObjects(World& world) {
 			}
 
 			Vectors2D polyCentre = findPolyCentre(obj1Vertz);
-			Body* b1 = new Body(new Polygon(obj1Vertz), polyCentre.x, polyCentre.y);
+			Body* b1 = world.createBody<Polygon>(polyCentre.x, polyCentre.y, obj1Vertz);
 			if (isStatic)
 				b1->setDensity(0.0f);
 			b1->restitution = b->restitution;
-			world.addBody(b1);
-
 			std::vector<Vectors2D> obj2Vertz;
 			obj2Vertz.push_back(intersection2.getCoord());
 			addVerticesAfterEdge(
@@ -209,11 +207,10 @@ void Slice::sliceObjects(World& world) {
 			}
 
 			polyCentre = findPolyCentre(obj2Vertz);
-			Body* b2 = new Body(new Polygon(obj2Vertz), polyCentre.x, polyCentre.y);
+			Body* b2 = world.createBody<Polygon>(polyCentre.x, polyCentre.y, obj2Vertz);
 			if (isStatic)
 				b2->setDensity(0.0f);
 			b2->restitution = b->restitution;
-			world.addBody(b2);
 			world.removeBody(b);
 		}
 		else if (b->shape->getType() == Shape::eCircle) {

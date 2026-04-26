@@ -1,6 +1,7 @@
 #include "CPhysics/Polygon.h"
 
 #include <cassert>
+#include <memory>
 
 Polygon::Polygon(const std::vector<Vectors2D>& vertLists)
 {
@@ -106,7 +107,7 @@ void Polygon::createAABB()
 	}
 
 	if (body->aabb == nullptr) {
-		body->aabb = new AABB(Vectors2D(minX, minY), Vectors2D(maxX, maxY));
+		body->aabb = std::make_unique<AABB>(Vectors2D(minX, minY), Vectors2D(maxX, maxY));
 	}
 	else
 	{

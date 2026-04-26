@@ -4,6 +4,8 @@
 #include "CPhysics/Circle.h"
 #include "CPhysics/Polygon.h"
 
+#include <memory>
+
 Test::Test()
 {
 	world = World(Vectors2D(0.0f, -9.81f));
@@ -13,9 +15,9 @@ Test::~Test()
 {
 }
 
-Body* Test::createRandomObject(const Vectors2D& lowerBound, const Vectors2D& upperBound, const int maxRadius) const
+std::unique_ptr<Body> Test::createRandomObject(const Vectors2D& lowerBound, const Vectors2D& upperBound, const int maxRadius) const
 {
-	Body* b = nullptr;
+	std::unique_ptr<Body> b;
 	real radius = static_cast<float>(generateRandomNoInRange(5, maxRadius));
 	real x = generateRandomNoInRange(lowerBound.x + radius, upperBound.x - radius);
 	real y = generateRandomNoInRange(lowerBound.y + radius, upperBound.y - radius);
@@ -23,12 +25,12 @@ Body* Test::createRandomObject(const Vectors2D& lowerBound, const Vectors2D& upp
 
 	switch (coinFlip()) {
 	case 0:
-		b = new Body(new Circle(radius), x, y);
+		b = std::make_unique<Body>(std::make_unique<Circle>(radius), x, y);
 		b->setOrientation(rotation);
 		break;
 	case 1:
 		const unsigned int sides = static_cast<unsigned int>(generateRandomNoInRange(3, 10));
-		b = new Body(new Polygon(radius, sides), x, y);
+		b = std::make_unique<Body>(std::make_unique<Polygon>(radius, sides), x, y);
 		b->setOrientation(rotation);
 		break;
 	}
@@ -47,34 +49,29 @@ bool Test::overlap(const Body* b) const
 
 void Test::generateRandomObjects(const Vectors2D& lowerBound, const Vectors2D& upperBound, int totalObjects, const int maxRadius) {
 	while (totalObjects > 0) {
-		Body* b = createRandomObject(lowerBound, upperBound, maxRadius);
-		if (overlap(b)) {
-			world.addBody(b);
+		std::unique_ptr<Body> b = createRandomObject(lowerBound, upperBound, maxRadius);
+		if (overlap(b.get())) {
+			world.addBody(std::move(b));
 			totalObjects--;
 		}
-		else { delete b; }
 	}
 }
 
 void Test::generateBoxOfObjects()
 {
-	Body* top = new Body(new Polygon(900.0f, 20.0f), -20.0f, 500.0f);
+	Body* top = world.createBody<Polygon>(-20.0f, 500.0f, 900.0f, 20.0f);
 	top->setDensity(0.0f);
-	world.addBody(top);
 
-	Body* right = new Body(new Polygon(500.0f, 20.0f), 900.0f, 20.0f);
+	Body* right = world.createBody<Polygon>(900.0f, 20.0f, 500.0f, 20.0f);
 	right->setOrientation(1.5708f);
 	right->setDensity(0.0f);
-	world.addBody(right);
 
-	Body* bottom = new Body(new Polygon(900.0f, 20.0f), 20.0f, -500.0f);
+	Body* bottom = world.createBody<Polygon>(20.0f, -500.0f, 900.0f, 20.0f);
 	bottom->setDensity(0.0f);
-	world.addBody(bottom);
 
-	Body* left = new Body(new Polygon(500.0f, 20.0f), -900.0f, -20.0f);
+	Body* left = world.createBody<Polygon>(-900.0f, -20.0f, 500.0f, 20.0f);
 	left->setOrientation(1.5708f);
 	left->setDensity(0.0f);
-	world.addBody(left);
 
 	{
 		generateRandomObjects(Vectors2D(-880.0f, -480.0f), Vectors2D(880.0f, 480.0f), 25, 100);
@@ -93,7 +90,7 @@ void Test::render()
 		for (Body* b : world.getBodies()) {
 			switch (b->shape->getType()) {
 			case Shape::eCircle: {
-				Circle* circle = (Circle*)b->shape;
+				Circle* circle = static_cast<Circle*>(b->shape.get());
 				const float radius = circle->getRadius();
 				Vectors2D line = circle->rotation * Vectors2D(1, 0);
 				if (b->mass == 0.0f)
@@ -104,7 +101,7 @@ void Test::render()
 							   break;
 
 			case Shape::ePolygon: {
-				Polygon* polygon = (Polygon*)b->shape;
+				Polygon* polygon = static_cast<Polygon*>(b->shape.get());
 				if (b->mass == 0.0f)
 					debugDraw.drawSolidPolygon(polygon->getVertices(), b->position, b->shape->rotation, polygon->getVertexCount(), settings.staticOutLine, settings.staticFill);
 				else
@@ -121,7 +118,7 @@ void Test::render()
 	if (settings.drawAABBs) {
 		for (Body* b : world.getBodies())
 		{
-			debugDraw.drawAABB(b->position, b->aabb, settings.aabb);
+			debugDraw.drawAABB(b->position, b->aabb.get(), settings.aabb);
 		}
 	}
 	if (settings.drawJoints) {
@@ -209,11 +206,11 @@ void Test::updateRaycast(const Vectors2D& pw)
 	raycastExplosions[0].getRayscatter().changeEpicentre(pw);
 }
 
-void Test::addPillar(Body* b, real density)
+Body* Test::addPillar(std::unique_ptr<Body> b, real density)
 {
 	b->restitution = 0.2f;
 	b->setDensity(density);
-	world.addBody(b);
+	return world.addBody(std::move(b));
 }
 
 void Test::createTower(unsigned int floors, real x, real y)
@@ -225,14 +222,11 @@ void Test::createTower(unsigned int floors, real x, real y)
 	const real heightOfPillar = height + height;
 	const real widthOfPillar = width + width;
 	for (unsigned int k = 0; k < floors; k++) {
-		Body* leftPillar = new Body(new Polygon(width, height), x, y + height);
-		addPillar(leftPillar, 1.0f);
+		addPillar(std::make_unique<Body>(std::make_unique<Polygon>(width, height), x, y + height), 1.0f);
 
-		Body* rightPillar = new Body(new Polygon(width, height), x + heightOfPillar - widthOfPillar, y + height);
-		addPillar(rightPillar, 1.0f);
+		addPillar(std::make_unique<Body>(std::make_unique<Polygon>(width, height), x + heightOfPillar - widthOfPillar, y + height), 1.0f);
 
-		Body* topPillar = new Body(new Polygon(height, width), x + height - width, y + heightOfPillar + width);
-		addPillar(topPillar, 1.0f);
+		addPillar(std::make_unique<Body>(std::make_unique<Polygon>(height, width), x + height - width, y + heightOfPillar + width), 1.0f);
 		y += heightOfPillar + width + width;
 	}
 }
@@ -254,7 +248,7 @@ void Test::drawInstructions()
 bool Test::isPointInside(const Body* b, const Vectors2D& startPoint)
 {
 	if (b->shape->getType() == Shape::ePolygon) {
-		Polygon* poly = (Polygon*)b->shape;
+		Polygon* poly = static_cast<Polygon*>(b->shape.get());
 		for (unsigned int i = 0; i < poly->getVertices().size(); i++) {
 			Vectors2D localPoint = startPoint - poly->body->position + (poly->body->shape->rotation * poly->getVertices()[i]);
 			if (dotProduct(localPoint, poly->body->shape->rotation * poly->getNormals()[i]) > 0.0f) {
@@ -263,7 +257,7 @@ bool Test::isPointInside(const Body* b, const Vectors2D& startPoint)
 		}
 	}
 	else if (b->shape->getType() == Shape::eCircle) {
-		Circle* circle = (Circle*)b->shape;
+		Circle* circle = static_cast<Circle*>(b->shape.get());
 		Vectors2D d = b->position - startPoint;
 
 		return !(d.len() > circle->getRadius());
@@ -280,30 +274,26 @@ void Test::generateRandomPolygon(const Vectors2D& location, const real minRadius
 		direction *= scalar;
 		verts.push_back(direction);
 	}
-	Body* b = new Body(new Polygon(verts), location.x, location.y);
+	Body* b = world.createBody<Polygon>(location.x, location.y, verts);
 	b->setDensity(generateRandomNoInRange(1.0f, 4.0f));
 	b->restitution = generateRandomNoInRange(0.0f, 1.0f);
-	world.addBody(b);
 }
 
 void Test::generateRandomCircle(const Vectors2D& location, const real minRadius, const real maxRadius)
 {
-	Body* b = new Body(new Circle(generateRandomNoInRange(minRadius, maxRadius)), location.x, location.y);
+	Body* b = world.createBody<Circle>(location.x, location.y, generateRandomNoInRange(minRadius, maxRadius));
 	b->setDensity(generateRandomNoInRange(1.0f, 4.0f));
 	b->restitution = generateRandomNoInRange(0.0f, 1.0f);
-	world.addBody(b);
 }
 
 void Test::buildShelf(real x, real y)
 {
-	Body* shelf = new Body(new Polygon(100.0f, 10.0f), x, y);
+	Body* shelf = world.createBody<Polygon>(x, y, 100.0f, 10.0f);
 	shelf->setDensity(0.0f);
-	world.addBody(shelf);
 
 	const int boxes = 4;
 	for (unsigned int i = 0; i < boxes; i++) {
-		Body* box = new Body(new Polygon(10.0f, 20.0f), x, y + 30.0f + static_cast<float>(i * 40));
-		world.addBody(box);
+		world.createBody<Polygon>(x, y + 30.0f + static_cast<float>(i * 40), 10.0f, 20.0f);
 	}
 }
 

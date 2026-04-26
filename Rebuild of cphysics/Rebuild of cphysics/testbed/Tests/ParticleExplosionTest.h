@@ -17,40 +17,33 @@ public:
 			buildShelf(450.0f, 400.0f);
 		}
 
-		Body* floor = new Body(new Polygon(20000.0f, 2000.0f), 0.0f, -2000.0f);
+		Body* floor = world.createBody<Polygon>(0.0f, -2000.0f, 20000.0f, 2000.0f);
 		floor->setDensity(0.0f);
-		world.addBody(floor);
 
-		Body* reflect = new Body(new Polygon(40.0f, 5.0f), -100.0f, 330.0f);
+		Body* reflect = world.createBody<Polygon>(-100.0f, 330.0f, 40.0f, 5.0f);
 		reflect->setOrientation(0.785398f);
 		reflect->setDensity(0.0f);
-		world.addBody(reflect);
 
 		{
-			Body* top = new Body(new Polygon(120.0f, 10.0f), 450.0f, 210.0f);
+			Body* top = world.createBody<Polygon>(450.0f, 210.0f, 120.0f, 10.0f);
 			top->setDensity(0.0f);
-			world.addBody(top);
 
-			Body* side1 = new Body(new Polygon(100.0f, 10.0f), 340.0f, 100.0f);
+			Body* side1 = world.createBody<Polygon>(340.0f, 100.0f, 100.0f, 10.0f);
 			side1->setOrientation(1.5708f);
 			side1->setDensity(0.0f);
-			world.addBody(side1);
 
-			Body* side2 = new Body(new Polygon(100.0f, 10.0f), 560.0f, 100.0f);
+			Body* side2 = world.createBody<Polygon>(560.0f, 100.0f, 100.0f, 10.0f);
 			side2->setOrientation(1.5708f);
 			side2->setDensity(0.0f);
-			world.addBody(side2);
 
 			for (unsigned int i = 0; i < 4; i++) {
-				Body* box = new Body(new Polygon(20.0f, 20.0f), 450.0f, 20.0f + static_cast<float>(i * 40));
-				world.addBody(box);
+				world.createBody<Polygon>(450.0f, 20.0f + static_cast<float>(i * 40), 20.0f, 20.0f);
 			}
 		}
 
 		for (unsigned int k = 0; k < 2; k++) {
 			for (unsigned int i = 0; i < 5; i++) {
-				Body* box = new Body(new Polygon(20.0f, 20.0f), -600.0f + static_cast<float>(k * 200), 20.0f + static_cast<float>(i * 40));
-				world.addBody(box);
+				world.createBody<Polygon>(-600.0f + static_cast<float>(k * 200), 20.0f + static_cast<float>(i * 40), 20.0f, 20.0f);
 			}
 		}
 	}

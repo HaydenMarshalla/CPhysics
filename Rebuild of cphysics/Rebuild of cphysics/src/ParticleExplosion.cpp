@@ -29,7 +29,7 @@ void ParticleExplosion::createParticles(real size, real density, real radius)
 	Matrix2D rotate = Matrix2D(seperationAngle);
 	for (unsigned int i = 0; i < noOfParticles; i++) {
 		Vectors2D particlePlacement = epicentre + distanceFromCentre;
-		Body* b = new Body(new Circle(size), particlePlacement.x, particlePlacement.y);
+		Body* b = world->createBody<Circle>(particlePlacement.x, particlePlacement.y, size);
 		b->setDensity(density);
 		b->restitution = 1.0f;
 		b->staticFriction = 0.0f;
@@ -37,7 +37,6 @@ void ParticleExplosion::createParticles(real size, real density, real radius)
 		b->affectedByGravity = false;
 		b->linearDampening = 0.0f;
 		b->particle = true;
-		world->addBody(b);
 		particles.push_back(b);
 		mul(rotate, distanceFromCentre);
 	}

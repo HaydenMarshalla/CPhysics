@@ -12,6 +12,7 @@ public:
 	virtual real rateOfChangeOfExtension() = 0;
 	virtual const Vectors2D& getStartPos() const = 0;
 	virtual const Vectors2D& getEndPos() const = 0;
+	virtual bool referencesBody(const Body* body) const;
 	
 protected:
 	Body* object1 = nullptr;

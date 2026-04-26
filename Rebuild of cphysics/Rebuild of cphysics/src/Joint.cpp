@@ -17,3 +17,8 @@ Joint::~Joint()
 {
 	object1 = nullptr;
 }
+
+bool Joint::referencesBody(const Body* body) const
+{
+	return object1 == body;
+}

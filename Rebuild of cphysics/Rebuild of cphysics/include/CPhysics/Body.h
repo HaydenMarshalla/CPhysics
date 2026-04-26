@@ -2,15 +2,23 @@
 
 #include "AABB.h"
 
+#include <memory>
+
 class Shape;
 
 class Body
 {
 public:
-	Body(){}
+	Body() = delete;
 	// Base constructor for all bodies - use this over the default.
-	Body(Shape* shapeIn, real x, real y);
+	Body(std::unique_ptr<Shape> shapeIn, real x, real y);
+	Body(Shape* shapeIn, real x, real y) = delete;
 	~Body();
+
+	Body(const Body&) = delete;
+	Body& operator=(const Body&) = delete;
+	Body(Body&&) = delete;
+	Body& operator=(Body&&) = delete;
 
 	// Changes the orientation of this body and the shape associated with it.
 	void setOrientation(real radians);
@@ -42,8 +50,8 @@ public:
 	bool affectedByGravity;
 	bool particle;
 
-	Shape* shape = nullptr;
-	AABB* aabb = nullptr;
+	std::unique_ptr<Shape> shape;
+	std::unique_ptr<AABB> aabb;
 	
 private:
 	void setStatic();

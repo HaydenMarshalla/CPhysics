@@ -8,6 +8,8 @@
 #include "CPhysics/Shadowcast.h"
 #include "CPhysics/Slice.h"
 
+#include <memory>
+
 class Test
 {
 public:
@@ -23,7 +25,7 @@ public:
 	void render();
 	void updateProximity(const Vectors2D& pw);
 	void updateRaycast(const Vectors2D& pw);
-	void addPillar(Body* b, real density);
+	Body* addPillar(std::unique_ptr<Body> b, real density);
 	void createTower(unsigned int floors, real x, real y);
 	void slice(const int i);
 	void breakJoint(unsigned int i);
@@ -46,7 +48,7 @@ protected:
 	std::vector<Slice> slices;
 	
 	static bool isPointInside(const Body* b, const Vectors2D& startPoint);
-	Body* createRandomObject(const Vectors2D& lowerBound, const Vectors2D& upperBound, const int maxRadius) const;
+	std::unique_ptr<Body> createRandomObject(const Vectors2D& lowerBound, const Vectors2D& upperBound, const int maxRadius) const;
 	bool overlap(const Body* b) const;
 	void generateRandomObjects(const Vectors2D& lowerBound, const Vectors2D& upperBound, int totalObjects, const int maxRadius);
 	void generateBoxOfObjects();

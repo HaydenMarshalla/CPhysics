@@ -20,14 +20,14 @@ void ShadowCasting::updateProjections(const std::vector<Body*>& bodiesToEvaluate
 	rayData.clear();
 	for (const Body* B : bodiesToEvaluate) {
 		if (B->shape->getType() == Shape::ePolygon) {
-			Polygon* poly1 = (Polygon*)B->shape;
+			Polygon* poly1 = static_cast<Polygon*>(B->shape.get());
 			for (const Vectors2D& v : poly1->getVertices()) {
 				Vectors2D direction = poly1->rotation * v + B->position - startPoint;
 				projectRays(direction, bodiesToEvaluate);
 			}
 		}
 		else {
-			Circle* circle = (Circle*)B->shape;
+			Circle* circle = static_cast<Circle*>(B->shape.get());
 			Vectors2D d = B->position - startPoint;
 
 			if (d.len() <= circle->getRadius()) {

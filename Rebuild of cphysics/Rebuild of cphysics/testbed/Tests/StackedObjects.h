@@ -14,21 +14,18 @@ public:
 
 		{
 			for (unsigned int x = 0; x < 10; x++) {
-				Body* b = new Body(new Polygon(1.0f, 1.0f), -9.0f + static_cast<float>(x * 2), 30.0f);
+				Body* b = world.createBody<Polygon>(-9.0f + static_cast<float>(x * 2), 30.0f, 1.0f, 1.0f);
 				b->setDensity(4.0f);
-				world.addBody(b);
 			}
 			
 			for (unsigned int x = 0; x < 10; x++) {
 				for (unsigned int y = 0; y < 10; y++) {
-					Body* b = new Body(new Polygon(1.0f, 1.0f), -9.0f + static_cast<float>(x * 2), static_cast<float>(y * 2));
-					world.addBody(b);
+					world.createBody<Polygon>(-9.0f + static_cast<float>(x * 2), static_cast<float>(y * 2), 1.0f, 1.0f);
 				}
 			}
 
-			Body* b = new Body(new Polygon(10.0f, 1.0f), 0.0f, -2.0f);
+			Body* b = world.createBody<Polygon>(0.0f, -2.0f, 10.0f, 1.0f);
 			b->setDensity(0.0f);
-			world.addBody(b);
 		}
 	}
 

@@ -2,6 +2,9 @@
 
 #include "CPhysics/Body.h"
 
+#include <algorithm>
+#include <utility>
+
 static const real DEFAULT_PENETRATION_ALLOWANCE = 0.01f;
 static const real DEFAULT_PENETRATION_CORRECTION = 0.1f;
 
@@ -20,6 +23,10 @@ World::~World()
 	clearAll();
 }
 
+World::World(World&&) noexcept = default;
+
+World& World::operator=(World&&) noexcept = default;
+
 void World::setGravity(const Vectors2D& gravity)
 {
 	w_gravity = gravity;
@@ -37,11 +44,11 @@ void World::collisionCheck()
 {
 	contacts.clear();
 	for (unsigned int a = 0; a < getBodies().size(); a++) {
-		Body* A = bodies[a];
+		Body* A = bodies[a].get();
 
 		for (unsigned int b = a + 1; b < bodies.size(); b++) {
 
-			Body* B = bodies[b];
+			Body* B = bodies[b].get();
 
 			//Ignored overlapping static objects
 			if ((A->invMass == 0.0f && B->invMass == 0.0f) || (A->particle && B->particle)) {
@@ -70,7 +77,7 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 	collisionCheck();
 
 	for (unsigned int i = 0; i < bodies.size(); i++) {
-		Body* b = bodies[i];
+		Body* b = bodies[i].get();
 		if (b->invMass == 0.0f)
 			continue;
 
@@ -82,7 +89,7 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 		b->angularVelocity += dt * b->invI * b->torque;
 	}
 
-	for (Joint* j : joints) {
+	for (const std::unique_ptr<Joint>& j : joints) {
 		j->applyTension();
 	}
 
@@ -96,7 +103,7 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 	//Integrate positions
 	for (unsigned int i = 0; i < bodies.size(); i++)
 	{
-		Body* b = bodies[i];
+		Body* b = bodies[i].get();
 		if (b->invMass == 0.0f)
 			continue;
 
@@ -112,44 +119,52 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 	}
 }
 
-void World::addBody(Body* b)
+Body* World::addBody(std::unique_ptr<Body> b)
 {
-	bodies.push_back(b);
+	Body* rawBody = b.get();
+	bodies.push_back(std::move(b));
+	bodyView.clear();
+	return rawBody;
 }
 
 void World::removeBody(Body* body)
 {
-	for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
-		if (body == *it) {
-			delete* it;
-			*it = nullptr;
+	joints.erase(std::remove_if(joints.begin(), joints.end(), [body](const std::unique_ptr<Joint>& joint) {
+		return joint->referencesBody(body);
+	}), joints.end());
+
+	for (std::vector<std::unique_ptr<Body>>::iterator it = bodies.begin(); it != bodies.end(); it++) {
+		if (body == it->get()) {
 			bodies.erase(it);
+			bodyView.clear();
+			jointView.clear();
 			return;
 		}
 	}
+	jointView.clear();
 }
 
 void World::removeAllBodies()
 {
-	for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
-		delete* it;
-		*it = nullptr;
-	}
+	removeAllJoints();
 	bodies.clear();
+	bodyView.clear();
 }
 
-void World::addJoint(Joint* joint)
+Joint* World::addJoint(std::unique_ptr<Joint> joint)
 {
-	joints.push_back(joint);
+	Joint* rawJoint = joint.get();
+	joints.push_back(std::move(joint));
+	jointView.clear();
+	return rawJoint;
 }
 
 void World::removeJoint(Joint* joint)
 {
-	for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
-		if (joint == *it) {
-			delete* it;
-			*it = nullptr;
+	for (std::vector<std::unique_ptr<Joint>>::iterator it = joints.begin(); it != joints.end(); it++) {
+		if (joint == it->get()) {
 			joints.erase(it);
+			jointView.clear();
 			return;
 		}
 	}
@@ -157,11 +172,8 @@ void World::removeJoint(Joint* joint)
 
 void World::removeAllJoints()
 {
-	for (std::vector<Joint*>::iterator it = joints.begin(); it != joints.end(); it++) {
-		delete* it;
-		*it = nullptr;
-	}
 	joints.clear();
+	jointView.clear();
 }
 
 void World::clearAll()
@@ -174,9 +186,9 @@ void World::clearAll()
 void World::gravityBetweenObj()
 {
 	for (unsigned int a = 0; a < bodies.size(); a++) {
-		Body* A = bodies[a];
+		Body* A = bodies[a].get();
 		for (unsigned int b = a + 1; b < bodies.size(); b++) {
-			Body* B = bodies[b];
+			Body* B = bodies[b].get();
 			real dist = distance(A->position, B->position);
 			real force = std::pow(6.67f, -11.0f) * A->mass * B->mass / (dist * dist);
 			Vectors2D direction = Vectors2D(B->position.x - A->position.x, B->position.y - A->position.y);
@@ -190,8 +202,38 @@ void World::gravityBetweenObj()
 
 void World::setStaticWorld()
 {
-	for (Body* b : bodies)
+	for (const std::unique_ptr<Body>& b : bodies)
 	{
 		b->setDensity(0.0f);
+	}
+}
+
+std::vector<Body*> const& World::getBodies() const
+{
+	refreshBodyView();
+	return bodyView;
+}
+
+std::vector<Joint*> const& World::getJoints() const
+{
+	refreshJointView();
+	return jointView;
+}
+
+void World::refreshBodyView() const
+{
+	bodyView.clear();
+	bodyView.reserve(bodies.size());
+	for (const std::unique_ptr<Body>& body : bodies) {
+		bodyView.push_back(body.get());
+	}
+}
+
+void World::refreshJointView() const
+{
+	jointView.clear();
+	jointView.reserve(joints.size());
+	for (const std::unique_ptr<Joint>& joint : joints) {
+		jointView.push_back(joint.get());
 	}
 }

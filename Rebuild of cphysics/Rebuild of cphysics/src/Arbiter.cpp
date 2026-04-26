@@ -78,8 +78,8 @@ void Arbiter::penetrationResolution(real allowance, real posCorrection)
 
 void Arbiter::circleVsCircle()
 {
-	Circle* ca = (Circle*)A->shape;
-	Circle* cb = (Circle*)B->shape;
+	Circle* ca = static_cast<Circle*>(A->shape.get());
+	Circle* cb = static_cast<Circle*>(B->shape.get());
 
 	Vectors2D normal = B->position - A->position;
 
@@ -107,8 +107,8 @@ void Arbiter::circleVsCircle()
 
 void Arbiter::circleVsPolygon(Body* aIn, Body* bIn)
 {
-	Circle* A = (Circle*)aIn->shape;
-	Polygon* B = (Polygon*)bIn->shape;
+	Circle* A = static_cast<Circle*>(aIn->shape.get());
+	Polygon* B = static_cast<Polygon*>(bIn->shape.get());
 
 	Vectors2D distanceOfPoints = aIn->position - bIn->position;
 	Vectors2D polyToCircle = B->rotation.Transpose() * distanceOfPoints;
@@ -276,8 +276,8 @@ void findAxisOfMinPenetration(AxisData& data, Polygon* A, Polygon* B) {
 
 void Arbiter::polygonVsPolygon()
 {
-	Polygon* pa = (Polygon*)A->shape;
-	Polygon* pb = (Polygon*)B->shape;
+	Polygon* pa = static_cast<Polygon*>(A->shape.get());
+	Polygon* pb = static_cast<Polygon*>(B->shape.get());
 
 	AxisData aData = AxisData();
 	findAxisOfMinPenetration(aData, pa, pb);

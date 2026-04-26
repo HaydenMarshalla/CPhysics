@@ -13,6 +13,7 @@ public:
 	void applyTension() override;
 	real calculateTension() override;
 	real rateOfChangeOfExtension() override;
+	bool referencesBody(const Body* body) const override;
 private:
 	Body* object2;
 	Vectors2D offset2;

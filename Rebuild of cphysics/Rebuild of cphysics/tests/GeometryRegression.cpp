@@ -1,5 +1,6 @@
 #include "CPhysics/Body.h"
 #include "CPhysics/Circle.h"
+#include "CPhysics/JointToBody.h"
 #include "CPhysics/Polygon.h"
 #include "CPhysics/Ray.h"
 #include "CPhysics/Slice.h"
@@ -8,6 +9,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 
 #define REQUIRE(condition) \
 	do \
@@ -27,7 +29,7 @@ bool nearlyEqual(real a, real b)
 
 void rayHitsVerticalPolygonEdge()
 {
-	Body box(new Polygon(1.0f, 1.0f), 0.0f, 0.0f);
+	Body box(std::make_unique<Polygon>(1.0f, 1.0f), 0.0f, 0.0f);
 	std::vector<Body*> bodies = { &box };
 
 	Ray ray(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 10.0f);
@@ -41,7 +43,7 @@ void rayHitsVerticalPolygonEdge()
 
 void rayStartingInsideCircleFindsExitPoint()
 {
-	Body circle(new Circle(1.0f), 0.0f, 0.0f);
+	Body circle(std::make_unique<Circle>(1.0f), 0.0f, 0.0f);
 	std::vector<Body*> bodies = { &circle };
 
 	Ray ray(Vectors2D(0.0f, 0.0f), Vectors2D(1.0f, 0.0f), 10.0f);
@@ -55,7 +57,7 @@ void rayStartingInsideCircleFindsExitPoint()
 
 void sliceCollectsOrderedPolygonIntersections()
 {
-	Body box(new Polygon(1.0f, 1.0f), 0.0f, 0.0f);
+	Body box(std::make_unique<Polygon>(1.0f, 1.0f), 0.0f, 0.0f);
 	std::vector<Body*> bodies = { &box };
 
 	Slice slice(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 10.0f);
@@ -72,8 +74,7 @@ void sliceCollectsOrderedPolygonIntersections()
 void slicingCircleDoesNotDeleteBody()
 {
 	World world;
-	Body* circle = new Body(new Circle(1.0f), 0.0f, 0.0f);
-	world.addBody(circle);
+	Body* circle = world.createBody<Circle>(0.0f, 0.0f, 1.0f);
 
 	Slice slice(Vectors2D(-3.0f, 0.0f), Vectors2D(1.0f, 0.0f), 10.0f);
 	slice.updateProjection(world.getBodies());
@@ -86,7 +87,7 @@ void slicingCircleDoesNotDeleteBody()
 void slicingBoxCreatesTwoBodies()
 {
 	World world;
-	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
 
 	Slice slice(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 10.0f);
 	slice.updateProjection(world.getBodies());
@@ -98,7 +99,7 @@ void slicingBoxCreatesTwoBodies()
 void slicingAlongPolygonEdgeDoesNotCreateInvalidPiece()
 {
 	World world;
-	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
 
 	Slice slice(Vectors2D(-2.0f, -1.0f), Vectors2D(1.0f, 0.0f), 4.0f);
 	slice.updateProjection(world.getBodies());
@@ -110,7 +111,7 @@ void slicingAlongPolygonEdgeDoesNotCreateInvalidPiece()
 void slicedBodyCanBeSlicedAgain()
 {
 	World world;
-	world.addBody(new Body(new Polygon(2.0f, 2.0f), 0.0f, 0.0f));
+	world.createBody<Polygon>(0.0f, 0.0f, 2.0f, 2.0f);
 
 	Slice firstSlice(Vectors2D(0.0f, -3.0f), Vectors2D(0.0f, 1.0f), 6.0f);
 	firstSlice.updateProjection(world.getBodies());
@@ -127,14 +128,30 @@ void slicedBodyCanBeSlicedAgain()
 void oneSliceCanCutMultipleBodies()
 {
 	World world;
-	world.addBody(new Body(new Polygon(1.0f, 1.0f), 0.0f, 0.0f));
-	world.addBody(new Body(new Polygon(1.0f, 1.0f), 4.0f, 0.0f));
+	world.createBody<Polygon>(0.0f, 0.0f, 1.0f, 1.0f);
+	world.createBody<Polygon>(4.0f, 0.0f, 1.0f, 1.0f);
 
 	Slice slice(Vectors2D(-2.0f, 0.0f), Vectors2D(1.0f, 0.0f), 8.0f);
 	slice.updateProjection(world.getBodies());
 	slice.sliceObjects(world);
 
 	REQUIRE(world.getBodies().size() == 4);
+}
+
+void removingBodyRemovesReferencingJoints()
+{
+	World world;
+	Body* first = world.createBody<Circle>(0.0f, 0.0f, 1.0f);
+	Body* second = world.createBody<Circle>(3.0f, 0.0f, 1.0f);
+	world.createJoint<JointToBody>(first, second, 1.0f, 10.0f, 1.0f, true, Vectors2D(), Vectors2D());
+
+	REQUIRE(world.getJoints().size() == 1);
+
+	world.removeBody(first);
+
+	REQUIRE(world.getBodies().size() == 1);
+	REQUIRE(world.getJoints().empty());
+	world.step(1.0f / 60.0f, 1);
 }
 }
 
@@ -148,5 +165,6 @@ int main()
 	slicingAlongPolygonEdgeDoesNotCreateInvalidPiece();
 	slicedBodyCanBeSlicedAgain();
 	oneSliceCanCutMultipleBodies();
+	removingBodyRemovesReferencingJoints();
 	return 0;
 }

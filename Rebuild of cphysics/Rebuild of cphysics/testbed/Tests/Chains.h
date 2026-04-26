@@ -18,26 +18,21 @@ public:
 		const float offset = static_cast<float>(maxChainLength - 1) * 2.0f;
 
 		for (unsigned int i = 0; i < maxChainLength; i++) {
-			Body* b2 = new Body(new Polygon(2.0f, 0.5f), offset - 4.0f * static_cast<float>(i), 20.0f);
-			world.addBody(b2);
+			world.createBody<Polygon>(offset - 4.0f * static_cast<float>(i), 20.0f, 2.0f, 0.5f);
 
 			if (i != 0) {
-				Joint* j1 = new JointToBody(world.getBodies()[i - 1], world.getBodies()[i], 0.3f, 30.0f, 1.0f, true, Vectors2D(-2.0f, 0.0f), Vectors2D(2.0f, 0.0f));
-				world.addJoint(j1);
+				world.createJoint<JointToBody>(world.getBodies()[i - 1], world.getBodies()[i], 0.3f, 30.0f, 1.0f, true, Vectors2D(-2.0f, 0.0f), Vectors2D(2.0f, 0.0f));
 			}
 		}
 
-		Body* b1 = new Body(new Circle(2.0f), 0.0f, 0.0f);
+		Body* b1 = world.createBody<Circle>(0.0f, 0.0f, 2.0f);
 		b1->setDensity(0.0f);
-		world.addBody(b1);
 		
-		Body* b2 = new Body(new Circle(6.0f), -20.0f, -10.0f);
+		Body* b2 = world.createBody<Circle>(-20.0f, -10.0f, 6.0f);
 		b2->setDensity(0.0f);
-		world.addBody(b2);
 		
-		Body* b3 = new Body(new Circle(8.0f), 20.0f, -10.0f);
+		Body* b3 = world.createBody<Circle>(20.0f, -10.0f, 8.0f);
 		b3->setDensity(0.0f);
-		world.addBody(b3);
 	}
 
 	void resetCamera() override

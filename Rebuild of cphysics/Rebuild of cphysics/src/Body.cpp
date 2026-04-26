@@ -1,9 +1,11 @@
 #include "CPhysics/Shape.h"
 
-Body::Body(Shape* shapeIn, real x, real y)
+#include <utility>
+
+Body::Body(std::unique_ptr<Shape> shapeIn, real x, real y)
 {
-	shape = shapeIn;
-	shapeIn->setBody(this);
+	shape = std::move(shapeIn);
+	shape->setBody(this);
 
 	position.set(x, y);
 	velocity.setZero();
@@ -28,13 +30,7 @@ Body::Body(Shape* shapeIn, real x, real y)
 	setOrientation(0.0f);
 }
 
-Body::~Body()
-{
-	delete shape;
-	shape = nullptr;
-	delete aabb;
-	aabb = nullptr;
-}
+Body::~Body() = default;
 
 void Body::setOrientation(real radians)
 {

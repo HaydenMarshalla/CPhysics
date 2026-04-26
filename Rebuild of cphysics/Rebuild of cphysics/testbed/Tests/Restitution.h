@@ -13,14 +13,12 @@ public:
 		resetCamera();
 
 		{
-			Body* b = new Body(new Polygon(20.0f, 1.0f), 0, -10);
+			Body* b = world.createBody<Polygon>(0.0f, -10.0f, 20.0f, 1.0f);
 			b->setDensity(0.0f);
-			world.addBody(b);
 
 			for (unsigned int i = 0; i < 3; i++) {
-				Body* b1 = new Body(new Polygon(3.0f, 3.0f), -10.0f + static_cast<float>(i * 10), 10.0f);
+				Body* b1 = world.createBody<Polygon>(-10.0f + static_cast<float>(i * 10), 10.0f, 3.0f, 3.0f);
 				b1->restitution = i / 3.0f;
-				world.addBody(b1);
 			}
 		}
 	}

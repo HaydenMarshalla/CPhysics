@@ -11,13 +11,11 @@ public:
 
 		resetCamera();
 		
-		Body* b1 = new Body(new Polygon(40.0f, 2.0f), 0.0f, 0.0f);
+		Body* b1 = world.createBody<Polygon>(0.0f, 0.0f, 40.0f, 2.0f);
 		b1->setDensity(0.0f);
-		world.addBody(b1);
 
-		Body* b2 = new Body(new Circle( 5.0f), 10.0f, 20.0f);
+		Body* b2 = world.createBody<Circle>(10.0f, 20.0f, 5.0f);
 		b2->setDensity(0.0f);
-		world.addBody(b2);
 	}
 
 	void resetCamera() override

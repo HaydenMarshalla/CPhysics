@@ -71,3 +71,8 @@ real JointToBody::rateOfChangeOfExtension()
 	return dotProduct(relativeVelocity, distance);
 
 }
+
+bool JointToBody::referencesBody(const Body* body) const
+{
+	return Joint::referencesBody(body) || object2 == body;
+}
