@@ -64,7 +64,18 @@ void World::applyLinearDrag(Body* b)
 	b->apply_force_to_centre(dragForceVector);
 }
 
-void World::collisionCheck()
+void World::validateStepInputs(real dt, real penetrationAllowance, real penetrationCorrection) const
+{
+	if (!std::isfinite(dt) || dt < 0.0f) {
+		throw std::invalid_argument("World step dt must be finite and non-negative.");
+	}
+	if (!std::isfinite(penetrationAllowance) || penetrationAllowance < 0.0f ||
+		!std::isfinite(penetrationCorrection) || penetrationCorrection < 0.0f) {
+		throw std::invalid_argument("World penetration parameters must be finite and non-negative.");
+	}
+}
+
+void World::generateContacts()
 {
 	contacts.clear();
 	std::unordered_map<long long, std::vector<unsigned int>> grid;
@@ -114,52 +125,48 @@ void World::evaluateCollisionPair(Body* A, Body* B)
 	}
 }
 
-void World::step(real dt, unsigned int iterations)
+void World::integrateForces(real dt)
 {
-	step(dt, iterations, DEFAULT_PENETRATION_ALLOWANCE, DEFAULT_PENETRATION_CORRECTION);
-}
-
-void World::step(real dt, unsigned int iterations, real penetrationAllowance, real penetrationCorrection)
-{
-	if (!std::isfinite(dt) || dt < 0.0f) {
-		throw std::invalid_argument("World step dt must be finite and non-negative.");
-	}
-	if (!std::isfinite(penetrationAllowance) || penetrationAllowance < 0.0f ||
-		!std::isfinite(penetrationCorrection) || penetrationCorrection < 0.0f) {
-		throw std::invalid_argument("World penetration parameters must be finite and non-negative.");
-	}
-	collisionCheck();
-
-	for (unsigned int i = 0; i < bodies.size(); i++) {
-		Body* b = bodies[i].get();
-		if (b->invMass == 0.0f)
+	for (const std::unique_ptr<Body>& body : bodies) {
+		Body* b = body.get();
+		if (b->invMass == 0.0f) {
 			continue;
+		}
 
 		applyLinearDrag(b);
 
-		if (b->affectedByGravity) b->velocity += w_gravity * dt;
+		if (b->affectedByGravity) {
+			b->velocity += w_gravity * dt;
+		}
 
 		b->velocity += dt * b->invMass * b->force;
 		b->angularVelocity += dt * b->invI * b->torque;
 	}
+}
 
+void World::solveJointConstraints()
+{
 	for (const std::unique_ptr<Joint>& j : joints) {
 		j->applyTension();
 	}
+}
 
-	//Apply impulses
+void World::solveVelocityConstraints(real dt, unsigned int iterations, real penetrationAllowance, real baumgarteBeta)
+{
 	for (unsigned int i = 0; i < iterations; i++) {
 		for (Arbiter contact : contacts) {
-			contact.solve(dt, penetrationAllowance, DEFAULT_BAUMGARTE_BETA);
+			contact.solve(dt, penetrationAllowance, baumgarteBeta);
 		}
 	}
+}
 
-	//Integrate positions
-	for (unsigned int i = 0; i < bodies.size(); i++)
-	{
-		Body* b = bodies[i].get();
-		if (b->invMass == 0.0f)
+void World::integrateVelocities(real dt)
+{
+	for (const std::unique_ptr<Body>& body : bodies) {
+		Body* b = body.get();
+		if (b->invMass == 0.0f) {
 			continue;
+		}
 
 		b->position += dt * b->velocity;
 		b->setOrientation(b->orientation + (dt * b->angularVelocity));
@@ -167,10 +174,30 @@ void World::step(real dt, unsigned int iterations, real penetrationAllowance, re
 		b->force.setZero();
 		b->torque = 0.0f;
 	}
+}
 
+void World::solvePositionConstraints(real penetrationAllowance, real penetrationCorrection)
+{
 	for (Arbiter contact : contacts) {
 		contact.penetrationResolution(penetrationAllowance, penetrationCorrection);
 	}
+}
+
+void World::step(real dt, unsigned int iterations)
+{
+	step(dt, iterations, DEFAULT_PENETRATION_ALLOWANCE, DEFAULT_PENETRATION_CORRECTION);
+}
+
+void World::step(real dt, unsigned int iterations, real penetrationAllowance, real penetrationCorrection)
+{
+	validateStepInputs(dt, penetrationAllowance, penetrationCorrection);
+
+	generateContacts();
+	integrateForces(dt);
+	solveJointConstraints();
+	solveVelocityConstraints(dt, iterations, penetrationAllowance, DEFAULT_BAUMGARTE_BETA);
+	integrateVelocities(dt);
+	solvePositionConstraints(penetrationAllowance, penetrationCorrection);
 }
 
 Body* World::addBody(std::unique_ptr<Body> b)

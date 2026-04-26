@@ -58,8 +58,14 @@ public:
 	std::vector<Arbiter> const& getContactsVector() const { return contacts; }
 
 private:
-	void collisionCheck();
+	void validateStepInputs(real dt, real penetrationAllowance, real penetrationCorrection) const;
+	void generateContacts();
 	void evaluateCollisionPair(Body* A, Body* B);
+	void integrateForces(real dt);
+	void solveJointConstraints();
+	void solveVelocityConstraints(real dt, unsigned int iterations, real penetrationAllowance, real baumgarteBeta);
+	void integrateVelocities(real dt);
+	void solvePositionConstraints(real penetrationAllowance, real penetrationCorrection);
 	static void applyLinearDrag(Body* body);
 	void refreshBodyView() const;
 	void refreshJointView() const;
